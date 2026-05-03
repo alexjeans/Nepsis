@@ -11,9 +11,7 @@ import androidx.navigation.NavController
 
 @Composable
 
-fun HomeScreen(
-    navController: NavController
-){
+fun HistoryScreen(){
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
