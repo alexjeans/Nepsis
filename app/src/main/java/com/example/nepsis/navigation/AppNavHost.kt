@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.nepsis.presentation.home.HomeScreen
+import com.example.nepsis.presentation.login.LoginScreen
 import com.example.nepsis.presentation.profile.HistoryScreen
 import com.example.nepsis.presentation.profile.ProfileScreen
 import com.example.nepsis.presentation.test.TestScreen
@@ -18,8 +19,12 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = AppDestinations.HOME
+        startDestination = AppDestinations.LOGIN
     ){
+        composable(route = AppDestinations.LOGIN){
+            LoginScreen(navController = navController)
+        }
+
         composable(route = AppDestinations.HOME){
             HomeScreen(navController = navController)
         }

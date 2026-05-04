@@ -5,4 +5,5 @@ object AppDestinations {
     const val TEST = "test"
     const val HISTORY = "history"
     const val PROFILE = "profile"
+    const val LOGIN = "login"
 }
