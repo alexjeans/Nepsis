@@ -29,5 +29,10 @@ fun HomeScreen(
         ) {
             Text(text = "Ir al Test")
         }
+
+        Button(onClick = {navController.navigate(AppDestinations.LOGIN)})
+        {
+            Text(text = "Cerrar Sesion")
+        }
     }
 }
