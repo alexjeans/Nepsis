@@ -1,196 +1,199 @@
 package com.example.nepsis.presentation.login
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.example.nepsis.navigation.AppDestinations
-import com.example.nepsis.ui.theme.NepsisTheme
-import com.example.nepsis.ui.theme.White
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.nepsis.model.PerfilEstudiante
+import com.example.nepsis.ui.components.GradientButton
+import com.example.nepsis.ui.components.InfoPill
+import com.example.nepsis.ui.components.ModernCard
+import com.example.nepsis.ui.components.UamBackground
+import com.example.nepsis.ui.theme.UamPrimary
+import com.example.nepsis.ui.theme.UamTextSecondary
 
 @Composable
+fun LoginScreen(
+    onIngresar: (PerfilEstudiante) -> Unit
+) {
+    var nombre by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
+    var colegio by remember { mutableStateOf("") }
+    var intento by remember { mutableStateOf(false) }
 
-fun LoginScreen(navController: NavController){
+    val nombreValido = nombre.trim().length >= 3
+    val correoValido = correo.contains("@") && correo.contains(".")
+    val colegioValido = colegio.trim().length >= 3
+    val formularioValido = nombreValido && correoValido && colegioValido
 
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var loading by remember { mutableStateOf(false) }
-
-
-    val emailError = !email.contains(other = "@") || email.isBlank()
-    val passwordError = password.length <= 7 || password.isBlank()
-
-
-    NepsisTheme {
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary
-                            )
-                        )
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally
+    UamBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 })
             ) {
-
-                Spacer(modifier = Modifier.height(80.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(150.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.background),
-                    contentAlignment = Alignment.Center
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "NEPSIS",
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        text = "UAM",
+                        color = UamPrimary,
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Black
                     )
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Nepsis Vocacional",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
 
-                Text(
-                    "Pantalla de login",
-                    color = Color.Black,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                    Text(
+                        text = "Orientación profesional para futuros universitarios",
+                        color = UamTextSecondary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
 
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    elevation = CardDefaults.cardElevation(8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(24.dp)) {
+                    ModernCard {
+                        InfoPill(text = "Evaluación de intereses vocacionales")
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        Text(
+                            text = "Datos del estudiante",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = UamPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = "Completa la información para iniciar el test.",
+                            color = UamTextSecondary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        Spacer(modifier = Modifier.height(18.dp))
 
                         OutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
+                            value = nombre,
+                            onValueChange = { nombre = it },
+                            label = { Text("Nombre completo") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            isError = intento && !nombreValido,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = UamPrimary,
+                                focusedLabelColor = UamPrimary
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = correo,
+                            onValueChange = { correo = it },
                             label = { Text("Correo") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            isError = emailError
+                            isError = intento && !correoValido,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email
+                            ),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = UamPrimary,
+                                focusedLabelColor = UamPrimary
+                            )
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        var showPassword by remember { mutableStateOf(false) }
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = { Text("Contraseña") },
+                            value = colegio,
+                            onValueChange = { colegio = it },
+                            label = { Text("Colegio o institución") },
                             modifier = Modifier.fillMaxWidth(),
-                            visualTransformation = if (showPassword)
-                                androidx.compose.ui.text.input.VisualTransformation.None
-                            else
-                                androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                            trailingIcon = {
-                                IconButton(onClick = { showPassword = !showPassword }) {
-                                    Icon(
-                                        imageVector = if (showPassword)
-                                            Icons.Default.Visibility
-                                        else
-                                            Icons.Default.VisibilityOff,
-                                        contentDescription = "Mostrar/Ocultar contraseña"
+                            singleLine = true,
+                            isError = intento && !colegioValido,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = UamPrimary,
+                                focusedLabelColor = UamPrimary
+                            )
+                        )
+
+                        if (intento && !formularioValido) {
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = "Revisa los campos antes de continuar.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(22.dp))
+
+                        GradientButton(
+                            text = "Iniciar experiencia",
+                            onClick = {
+                                intento = true
+
+                                if (formularioValido) {
+                                    onIngresar(
+                                        PerfilEstudiante(
+                                            nombre = nombre,
+                                            correo = correo,
+                                            colegio = colegio
+                                        )
                                     )
                                 }
-                            },
-                            singleLine = true,
-                            isError = passwordError
-                        )
-                        //{ navController.navigate(AppDestinations.HOME) }xddd
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Button(
-                            onClick = {
-                                if (emailError || passwordError) {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = "Por favor, complete todos los campos correctamente"
-                                        )
-                                    }
-                                } else
-                                    scope.launch {
-                                        loading = true
-                                        delay(1500)
-                                        loading = false
-                                        navController.navigate(AppDestinations.HOME)
-                                    }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                        ) {
-                            if (loading) {
-                                CircularProgressIndicator(
-                                    color = White,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            } else {
-                                Text("Iniciar sesión", color = White)
                             }
-                        }
+                        )
                     }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    Text(
+                        text = "Esta aplicación es educativa y orientativa. No sustituye una evaluación psicológica profesional.",
+                        textAlign = TextAlign.Center,
+                        color = UamTextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }

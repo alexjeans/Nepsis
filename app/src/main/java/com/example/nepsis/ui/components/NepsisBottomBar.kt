@@ -1,8 +1,8 @@
 package com.example.nepsis.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -11,14 +11,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.test.espresso.base.Default
 import com.example.nepsis.navigation.AppDestinations
 import com.example.nepsis.navigation.BottomNavItem
 
 @Composable
 fun NepsisBottomBar(
     navController: NavHostController
-){
+) {
     val items = listOf(
         BottomNavItem(
             title = "Inicio",
@@ -27,27 +26,25 @@ fun NepsisBottomBar(
         ),
         BottomNavItem(
             title = "Historial",
-            icon = Icons.Default.List,
+            icon = Icons.Default.History,
             route = AppDestinations.HISTORY
         ),
         BottomNavItem(
             title = "Perfil",
             icon = Icons.Default.Person,
             route = AppDestinations.PROFILE
-        ),
+        )
     )
+
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
-    NavigationBar{
+    NavigationBar {
         items.forEach { item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = {
-                    navController.navigate(item.route){
-                        popUpTo(navController.graph.startDestinationId){
-                            saveState = true
-                        }
+                    navController.navigate(item.route) {
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -65,4 +62,3 @@ fun NepsisBottomBar(
         }
     }
 }
-
