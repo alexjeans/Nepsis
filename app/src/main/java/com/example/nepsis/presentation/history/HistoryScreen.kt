@@ -27,6 +27,7 @@ import com.example.nepsis.ui.theme.UamAccent
 import com.example.nepsis.ui.theme.UamPrimary
 import com.example.nepsis.ui.theme.UamTextSecondary
 
+
 @Composable
 fun HistoryScreen(
     historial: List<ResultadoVocacional>

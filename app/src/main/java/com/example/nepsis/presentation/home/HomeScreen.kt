@@ -32,6 +32,8 @@ import com.example.nepsis.ui.components.UamBackground
 import com.example.nepsis.ui.theme.UamPrimary
 import com.example.nepsis.ui.theme.UamTextSecondary
 
+
+
 @Composable
 fun HomeScreen(
     perfil: PerfilEstudiante?,
