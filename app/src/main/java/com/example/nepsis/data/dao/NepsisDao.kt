@@ -8,14 +8,14 @@ import kotlinx.coroutines.flow.Flow
 interface NepsisDao {
     // Perfil
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProfile(profile: ProfileEntity)
+    suspend fun insertProfile(profile: ProfileEntity): Long
 
     @Query("SELECT * FROM profiles LIMIT 1")
     fun getProfile(): Flow<ProfileEntity?>
 
     // Daily Moods
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertDailyMood(mood: DailyMoodEntity)
+    suspend fun insertDailyMood(mood: DailyMoodEntity): Long
 
     @Query("SELECT * FROM daily_moods ORDER BY date DESC")
     fun getAllDailyMoods(): Flow<List<DailyMoodEntity>>
@@ -24,15 +24,15 @@ interface NepsisDao {
     suspend fun getUnsyncedMoods(): List<DailyMoodEntity>
 
     @Update
-    suspend fun updateDailyMood(mood: DailyMoodEntity)
+    suspend fun updateDailyMood(mood: DailyMoodEntity): Int
 
     // Tests & Resultados
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTestResult(result: TestResultEntity)
+    suspend fun insertTestResult(result: TestResultEntity): Long
 
     @Query("SELECT * FROM test_results WHERE isSynced = 0")
     suspend fun getUnsyncedResults(): List<TestResultEntity>
 
     @Update
-    suspend fun updateTestResult(result: TestResultEntity)
+    suspend fun updateTestResult(result: TestResultEntity): Int
 }

@@ -16,5 +16,5 @@ import com.example.nepsis.data.local.dao.NepsisDao
     exportSchema = false
 )
 abstract class NepsisDatabase : RoomDatabase() {
-    abstract val nepsisDao: NepsisDao
+    abstract fun nepsisDao(): NepsisDao
 }
