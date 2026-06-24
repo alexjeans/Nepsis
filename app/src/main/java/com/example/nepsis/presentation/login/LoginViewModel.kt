@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.nepsis.core.utils.Resource
+import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.data.remote.dto.SupabaseAuthResponse
 import com.example.nepsis.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,8 @@ data class LoginState(
 )
 
 class LoginViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -29,6 +31,11 @@ class LoginViewModel(
             _state.value = _state.value.copy(isLoading = true)
             when (val result = repository.loginWithGoogle(idToken)) {
                 is Resource.Success -> {
+                    // GUARDAR SESIÓN GLOBALMENTE AQUÍ
+                    sessionManager.saveSession(
+                        token = result.data.accessToken,
+                        userId = result.data.user.id
+                    )
                     _state.value = _state.value.copy(isLoading = false, authData = result.data, error = null)
                 }
                 is Resource.Error -> {
@@ -40,11 +47,14 @@ class LoginViewModel(
     }
 }
 
-class LoginViewModelFactory(private val repository: AuthRepository) : ViewModelProvider.Factory {
+class LoginViewModelFactory(
+    private val repository: AuthRepository,
+    private val sessionManager: SessionManager
+) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            return LoginViewModel(repository) as T
+            return LoginViewModel(repository, sessionManager) as T
         }
         throw IllegalArgumentException("Clase ViewModel desconocida")
     }

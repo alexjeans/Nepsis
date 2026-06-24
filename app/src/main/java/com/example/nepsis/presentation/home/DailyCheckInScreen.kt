@@ -107,13 +107,10 @@ fun DailyCheckInScreen(
             // Botón de Guardar
             Button(
                 onClick = {
-                    // TODO: Reemplazar con el userId y token reales de Supabase Auth
                     viewModel.saveMood(
                         energy = energy.toInt(),
                         stress = stress.toInt(),
-                        emotion = selectedEmotion.ifEmpty { "Neutral" },
-                        userId = "usuario_temporal_id", 
-                        token = "token_temporal"
+                        emotion = selectedEmotion.ifEmpty { "Neutral" }
                     )
                     onNavigateBack()
                 },

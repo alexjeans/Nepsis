@@ -3,6 +3,7 @@ package com.example.nepsis.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List // Agregado para Biblioteca
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -22,17 +23,22 @@ fun NepsisBottomBar(
         BottomNavItem(
             title = "Inicio",
             icon = Icons.Default.Home,
-            route = AppDestinations.HOME
+            route = AppDestinations.Home.route // Corregido
+        ),
+        BottomNavItem(
+            title = "Tests",
+            icon = Icons.Default.List,
+            route = AppDestinations.TestLibrary.route // Agregado
         ),
         BottomNavItem(
             title = "Historial",
             icon = Icons.Default.History,
-            route = AppDestinations.HISTORY
+            route = AppDestinations.History.route // Corregido
         ),
         BottomNavItem(
             title = "Perfil",
             icon = Icons.Default.Person,
-            route = AppDestinations.PROFILE
+            route = AppDestinations.Profile.route // Corregido
         )
     )
 

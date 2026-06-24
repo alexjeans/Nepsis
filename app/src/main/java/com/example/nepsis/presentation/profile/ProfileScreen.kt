@@ -42,7 +42,12 @@ import com.example.nepsis.ui.theme.UamTextSecondary
 
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(ServiceLocator.provideProfileRepository(LocalContext.current)))
+    viewModel: ProfileViewModel = viewModel(
+        factory = ProfileViewModelFactory(
+            repository = ServiceLocator.provideProfileRepository(LocalContext.current),
+            sessionManager = ServiceLocator.provideSessionManager(LocalContext.current)
+        )
+    )
 ) {
     val state by viewModel.state.collectAsState()
     val perfil = state.profile

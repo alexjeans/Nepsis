@@ -3,6 +3,7 @@ package com.example.nepsis.core.di
 import android.content.Context
 import androidx.room.Room
 import com.example.nepsis.core.network.RetrofitClient
+import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.data.local.NepsisDatabase
 import com.example.nepsis.data.repository.AuthRepositoryImpl
 import com.example.nepsis.data.repository.NepsisRepositoryImpl
@@ -13,6 +14,15 @@ import com.example.nepsis.domain.repository.ProfileRepository
 
 object ServiceLocator {
     private var database: NepsisDatabase? = null
+    private var sessionManager: SessionManager? = null
+
+    fun provideSessionManager(context: Context): SessionManager {
+        return sessionManager ?: synchronized(this) {
+            val instance = SessionManager(context.applicationContext)
+            sessionManager = instance
+            instance
+        }
+    }
 
     fun provideDatabase(context: Context): NepsisDatabase {
         return database ?: synchronized(this) {

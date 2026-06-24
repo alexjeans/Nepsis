@@ -18,6 +18,8 @@ import com.example.nepsis.presentation.home.HomeScreen
 import com.example.nepsis.presentation.home.HomeViewModel
 import com.example.nepsis.presentation.home.HomeViewModelFactory
 import com.example.nepsis.presentation.login.LoginScreen
+import com.example.nepsis.presentation.login.LoginViewModel
+import com.example.nepsis.presentation.login.LoginViewModelFactory
 import com.example.nepsis.presentation.profile.ProfileScreen
 
 @Composable
@@ -32,15 +34,34 @@ fun AppNavHost(
     ) {
         // --- 1. AUTH FLOW ---
         composable(AppDestinations.Splash.route) {
+            val context = LocalContext.current
+            val sessionManager = ServiceLocator.provideSessionManager(context)
+            
             LaunchedEffect(Unit) {
-                navController.navigate(AppDestinations.Login.route) {
-                    popUpTo(AppDestinations.Splash.route) { inclusive = true }
+                // Si ya tiene sesión, salta el Login
+                if (sessionManager.isLoggedIn()) {
+                    navController.navigate(AppDestinations.Home.route) {
+                        popUpTo(AppDestinations.Splash.route) { inclusive = true }
+                    }
+                } else {
+                    navController.navigate(AppDestinations.Login.route) {
+                        popUpTo(AppDestinations.Splash.route) { inclusive = true }
+                    }
                 }
             }
         }
 
         composable(AppDestinations.Login.route) {
+            val context = LocalContext.current
+            val loginViewModel: LoginViewModel = viewModel(
+                factory = LoginViewModelFactory(
+                    repository = ServiceLocator.provideAuthRepository(),
+                    sessionManager = ServiceLocator.provideSessionManager(context)
+                )
+            )
+            
             LoginScreen(
+                viewModel = loginViewModel,
                 onLoginSuccess = {
                     navController.navigate(AppDestinations.Home.route) {
                         popUpTo(AppDestinations.Login.route) { inclusive = true }
@@ -51,15 +72,16 @@ fun AppNavHost(
 
         // --- 2. MAIN FLOW (BOTTOM NAV) ---
         composable(AppDestinations.Home.route) {
+            val context = LocalContext.current
+            val homeViewModel: com.example.nepsis.presentation.home.HomeViewModel = viewModel(
+                factory = com.example.nepsis.presentation.home.HomeViewModelFactory(
+                    repository = ServiceLocator.provideNepsisRepository(context),
+                    sessionManager = ServiceLocator.provideSessionManager(context)
+                )
+            )
+
             HomeScreen(
-                onIniciarTest = {
-                    navController.navigate(AppDestinations.TestLibrary.route)
-                },
-                onCerrarSesion = {
-                    navController.navigate(AppDestinations.Login.route) {
-                        popUpTo(AppDestinations.Home.route) { inclusive = true }
-                    }
-                },
+                viewModel = homeViewModel,
                 onNavigateToDailyCheckIn = {
                     navController.navigate(AppDestinations.DailyCheckIn.route)
                 }
@@ -76,14 +98,23 @@ fun AppNavHost(
         }
 
         composable(AppDestinations.Profile.route) {
-            ProfileScreen()
+            val context = LocalContext.current
+            val profileViewModel: com.example.nepsis.presentation.profile.ProfileViewModel = viewModel(
+                factory = com.example.nepsis.presentation.profile.ProfileViewModelFactory(
+                    repository = ServiceLocator.provideProfileRepository(context),
+                    sessionManager = ServiceLocator.provideSessionManager(context)
+                )
+            )
+            ProfileScreen(viewModel = profileViewModel)
         }
 
         // --- 3. SUB-FLOWS (PANTALLA COMPLETA) ---
         composable(AppDestinations.DailyCheckIn.route) {
+            val context = LocalContext.current
             val homeViewModel: HomeViewModel = viewModel(
                 factory = HomeViewModelFactory(
-                    ServiceLocator.provideNepsisRepository(LocalContext.current)
+                    repository = ServiceLocator.provideNepsisRepository(context),
+                    sessionManager = ServiceLocator.provideSessionManager(context)
                 )
             )
             

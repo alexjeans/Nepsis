@@ -1,6 +1,8 @@
 package com.example.nepsis.presentation.login
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,8 +23,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    viewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(ServiceLocator.provideAuthRepository()))
-) {
+    viewModel: LoginViewModel
+)
+{
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -47,10 +50,16 @@ fun LoginScreen(
             CircularProgressIndicator()
         } else {
             Button(onClick = {
-                coroutineScope.launch {
-                    launchGoogleLogin(context) { idToken ->
-                        if (idToken != null) {
-                            viewModel.loginWithSupabase(idToken)
+                // Extraemos el Activity de forma segura
+                val activityContext = context.findActivity()
+                if (activityContext != null) {
+                    coroutineScope.launch {
+                        launchGoogleLogin(activityContext) { idToken ->
+                            if (idToken != null) {
+                                viewModel.loginWithSupabase(idToken)
+                            } else {
+                                // Opcional: Manejar si el token es null (ej. el usuario canceló)
+                            }
                         }
                     }
                 }
@@ -91,4 +100,11 @@ private suspend fun launchGoogleLogin(context: Context, onResult: (String?) -> U
     } catch (e: Exception) {
         onResult(null)
     }
+}
+
+// Busca recursivamente el Activity subyacente
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

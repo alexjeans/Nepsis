@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.nepsis.core.utils.Resource
+import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.data.local.entity.DailyMoodEntity
 import com.example.nepsis.domain.repository.NepsisRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,8 +14,15 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+data class HomeState(
+    val isLoading: Boolean = false,
+    val moods: List<DailyMoodEntity> = emptyList(),
+    val error: String? = null
+)
+
 class HomeViewModel(
-    private val repository: NepsisRepository
+    private val repository: NepsisRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -34,7 +42,10 @@ class HomeViewModel(
         }
     }
 
-    fun saveMood(energy: Int, stress: Int, emotion: String, userId: String, token: String) {
+    fun saveMood(energy: Int, stress: Int, emotion: String) {
+        val userId = sessionManager.getUserId() ?: return
+        val token = sessionManager.getToken() ?: return
+
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
             
@@ -43,33 +54,26 @@ class HomeViewModel(
                 energyLevel = energy,
                 stressLevel = stress,
                 emotionalState = emotion,
-                date = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+                date = LocalDate.now().toString()
             )
             
             when (val result = repository.saveDailyMood(newMood, token)) {
-                is Resource.Success -> {
-                    _state.value = _state.value.copy(isLoading = false, error = null)
-                }
-                is Resource.Error -> {
-                    _state.value = _state.value.copy(isLoading = false, error = result.message)
-                }
+                is Resource.Success -> _state.value = _state.value.copy(isLoading = false, error = null)
+                is Resource.Error -> _state.value = _state.value.copy(isLoading = false, error = result.message)
                 is Resource.Loading -> { }
             }
         }
     }
-
-    fun syncData(userId: String, token: String) {
-        viewModelScope.launch {
-            repository.syncData(userId, token)
-        }
-    }
 }
 
-class HomeViewModelFactory(private val repository: NepsisRepository) : ViewModelProvider.Factory {
+class HomeViewModelFactory(
+    private val repository: NepsisRepository,
+    private val sessionManager: SessionManager
+) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
-            return HomeViewModel(repository) as T
+            return HomeViewModel(repository, sessionManager) as T
         }
         throw IllegalArgumentException("Clase ViewModel desconocida")
     }

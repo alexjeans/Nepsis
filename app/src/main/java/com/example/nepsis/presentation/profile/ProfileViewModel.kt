@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.nepsis.core.utils.Resource
+import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.data.local.entity.ProfileEntity
 import com.example.nepsis.domain.repository.ProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,8 @@ data class ProfileState(
 )
 
 class ProfileViewModel(
-    private val repository: ProfileRepository
+    private val repository: ProfileRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
@@ -26,6 +28,15 @@ class ProfileViewModel(
 
     init {
         loadLocalProfile()
+        syncWithSession()
+    }
+
+    private fun syncWithSession() {
+        val userId = sessionManager.getUserId()
+        val token = sessionManager.getToken()
+        if (userId != null && token != null) {
+            syncProfile(userId, token)
+        }
     }
 
     private fun loadLocalProfile() {
@@ -48,11 +59,14 @@ class ProfileViewModel(
     }
 }
 
-class ProfileViewModelFactory(private val repository: ProfileRepository) : ViewModelProvider.Factory {
+class ProfileViewModelFactory(
+    private val repository: ProfileRepository,
+    private val sessionManager: SessionManager
+) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
-            return ProfileViewModel(repository) as T
+            return ProfileViewModel(repository, sessionManager) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
