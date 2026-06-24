@@ -18,7 +18,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.nepsis.model.ResultadoVocacional
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nepsis.core.di.ServiceLocator
+import com.example.nepsis.model.AreaVocacional
 import com.example.nepsis.ui.components.InfoPill
 import com.example.nepsis.ui.components.ModernCard
 import com.example.nepsis.ui.components.SectionTitle
@@ -30,8 +35,11 @@ import com.example.nepsis.ui.theme.UamTextSecondary
 
 @Composable
 fun HistoryScreen(
-    historial: List<ResultadoVocacional>
+    viewModel: HistoryViewModel = viewModel(factory = HistoryViewModelFactory(ServiceLocator.provideNepsisRepository(LocalContext.current)))
 ) {
+    val state by viewModel.state.collectAsState()
+    val historial = state.results
+
     UamBackground {
         Column(
             modifier = Modifier
@@ -49,7 +57,7 @@ fun HistoryScreen(
                 ) {
                     SectionTitle(
                         titulo = "Historial",
-                        subtitulo = "Resultados vocacionales guardados durante la sesión"
+                        subtitulo = "Tus resultados de pruebas guardados"
                     )
 
                     if (historial.isEmpty()) {
@@ -71,31 +79,31 @@ fun HistoryScreen(
                             )
                         }
                     } else {
-                        historial.asReversed().forEachIndexed { index, resultado ->
-                            val numeroResultado = historial.size - index
-                            val porcentaje = resultado.porcentajePrincipal()
+                        historial.forEachIndexed { index, resultado ->
+                            val area = AreaVocacional.entries.find { it.titulo == resultado.resultText }
+                            val porcentaje = resultado.totalScore // Asumiendo que guardamos el % o puntaje directo
 
                             ModernCard {
-                                InfoPill(text = "Resultado $numeroResultado")
+                                InfoPill(text = "Resultado ${historial.size - index}")
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Text(
-                                    text = resultado.areaPrincipal.titulo,
+                                    text = area?.titulo ?: resultado.resultText,
                                     color = UamPrimary,
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold
                                 )
 
                                 Text(
-                                    text = resultado.areaPrincipal.descripcion,
+                                    text = area?.descripcion ?: "Resultado de tu evaluación vocacional.",
                                     color = UamTextSecondary
                                 )
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Text(
-                                    text = "Compatibilidad aproximada: $porcentaje%",
+                                    text = "Compatibilidad: $porcentaje%",
                                     fontWeight = FontWeight.Bold
                                 )
 
