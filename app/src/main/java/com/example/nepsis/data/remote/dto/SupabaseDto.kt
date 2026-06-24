@@ -40,3 +40,12 @@ data class TestResultDto(
     @SerializedName("total_score") val totalScore: Int,
     @SerializedName("result_text") val resultText: String
 )
+
+data class ProfileDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("email") val email: String,
+    @SerializedName("full_name") val fullName: String?,
+    @SerializedName("avatar_url") val avatarUrl: String?,
+    @SerializedName("level") val level: Int,
+    @SerializedName("points") val points: Int
+)

@@ -48,3 +48,13 @@ fun TestResultDto.toEntity() = TestResultEntity(
     resultText = resultText,
     isSynced = true
 )
+
+// --- Profile ---
+fun ProfileDto.toEntity() = ProfileEntity(
+    id = id,
+    email = email,
+    fullName = fullName ?: "Usuario",
+    avatarUrl = avatarUrl,
+    level = level,
+    points = points
+)

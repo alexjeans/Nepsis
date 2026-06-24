@@ -17,6 +17,8 @@ class NepsisRepositoryImpl(
 
     override fun getLocalMoods(): Flow<List<DailyMoodEntity>> = dao.getAllDailyMoods()
 
+    override fun getLocalTestResults(): Flow<List<TestResultEntity>> = dao.getAllTestResults()
+
     override suspend fun saveDailyMood(mood: DailyMoodEntity, token: String): Resource<Unit> {
         return try {
             // 1. Guardar local siempre (Offline First)

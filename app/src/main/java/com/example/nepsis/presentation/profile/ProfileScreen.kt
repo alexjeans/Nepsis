@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -18,33 +19,35 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.nepsis.model.PerfilEstudiante
-import com.example.nepsis.model.ResultadoVocacional
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nepsis.core.di.ServiceLocator
 import com.example.nepsis.ui.components.InfoPill
 import com.example.nepsis.ui.components.ModernCard
 import com.example.nepsis.ui.components.SectionTitle
 import com.example.nepsis.ui.components.StatCard
 import com.example.nepsis.ui.components.UamBackground
 import com.example.nepsis.ui.theme.UamAccent
-import com.example.nepsis.ui.theme.UamBackground
 import com.example.nepsis.ui.theme.UamPrimary
 import com.example.nepsis.ui.theme.UamPrimaryDark
 import com.example.nepsis.ui.theme.UamTextSecondary
 
 @Composable
 fun ProfileScreen(
-    perfil: PerfilEstudiante?,
-    historial: List<ResultadoVocacional>
+    viewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(ServiceLocator.provideProfileRepository(LocalContext.current)))
 ) {
-    val ultimaArea = historial.lastOrNull()?.areaPrincipal?.titulo ?: "Sin resultado"
+    val state by viewModel.state.collectAsState()
+    val perfil = state.profile
 
-    val iniciales = perfil?.nombre
+    val iniciales = perfil?.fullName
         ?.trim()
         ?.split(" ")
         ?.filter { it.isNotBlank() }
@@ -69,13 +72,14 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     SectionTitle(
-                        titulo = "Perfil",
-                        subtitulo = "Información del estudiante"
+                        titulo = "Mi Perfil",
+                        subtitulo = "Información de tu cuenta Nepsis"
                     )
 
                     ModernCard {
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Box(
                                 modifier = Modifier
@@ -95,23 +99,15 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.height(14.dp))
 
                             Text(
-                                text = perfil?.nombre ?: "Estudiante no registrado",
+                                text = perfil?.fullName ?: "Usuario",
                                 color = UamPrimary,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
                             )
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
                             Text(
-                                text = "Correo: ${perfil?.correo ?: "No registrado"}",
-                                color = UamTextSecondary,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Text(
-                                text = "Colegio: ${perfil?.colegio ?: "No registrado"}",
+                                text = perfil?.email ?: "Sin correo vinculado",
                                 color = UamTextSecondary,
                                 textAlign = TextAlign.Center
                             )
@@ -122,16 +118,16 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         StatCard(
-                            titulo = "Tests",
-                            valor = historial.size.toString(),
-                            emoji = "📘",
+                            titulo = "Nivel",
+                            valor = perfil?.level?.toString() ?: "1",
+                            emoji = "⭐",
                             modifier = Modifier.weight(1f)
                         )
 
                         StatCard(
-                            titulo = "Área",
-                            valor = ultimaArea,
-                            emoji = "🎯",
+                            titulo = "Puntos",
+                            valor = perfil?.points?.toString() ?: "0",
+                            emoji = "🏆",
                             modifier = Modifier.weight(1f)
                         )
                     }

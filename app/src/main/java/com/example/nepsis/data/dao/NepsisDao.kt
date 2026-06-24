@@ -33,6 +33,9 @@ interface NepsisDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTestResult(result: TestResultEntity): Long
 
+    @Query("SELECT * FROM test_results ORDER BY createdAt DESC")
+    fun getAllTestResults(): Flow<List<TestResultEntity>>
+
     @Query("SELECT * FROM test_results WHERE isSynced = 0")
     suspend fun getUnsyncedResults(): List<TestResultEntity>
 

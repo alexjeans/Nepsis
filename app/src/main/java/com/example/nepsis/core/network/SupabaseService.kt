@@ -33,4 +33,10 @@ interface SupabaseService {
         @Header("Authorization") bearerToken: String,
         @Body results: List<TestResultDto>
     ): Response<Unit>
+
+    @GET("rest/v1/profiles?select=*")
+    suspend fun getProfile(
+        @Header("Authorization") bearerToken: String,
+        @Query("id") idFilter: String // Se usará con formato "eq.USER_ID"
+    ): Response<List<ProfileDto>>
 }

@@ -16,12 +16,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nepsis.core.di.ServiceLocator
 import com.example.nepsis.data.VocacionalRepository
-import com.example.nepsis.model.PerfilEstudiante
-import com.example.nepsis.model.ResultadoVocacional
+import com.example.nepsis.presentation.profile.ProfileViewModel
+import com.example.nepsis.presentation.profile.ProfileViewModelFactory
 import com.example.nepsis.ui.components.GradientButton
 import com.example.nepsis.ui.components.InfoPill
 import com.example.nepsis.ui.components.ModernCard
@@ -32,16 +37,16 @@ import com.example.nepsis.ui.components.UamBackground
 import com.example.nepsis.ui.theme.UamPrimary
 import com.example.nepsis.ui.theme.UamTextSecondary
 
-
-
 @Composable
 fun HomeScreen(
-    perfil: PerfilEstudiante?,
-    historial: List<ResultadoVocacional>,
     onIniciarTest: () -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(ServiceLocator.provideNepsisRepository(LocalContext.current))),
+    profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(ServiceLocator.provideProfileRepository(LocalContext.current)))
 ) {
-    val ultimoResultado = historial.lastOrNull()
+    val homeState by homeViewModel.state.collectAsState()
+    val profileState by profileViewModel.state.collectAsState()
+    val perfil = profileState.profile
 
     UamBackground {
         Column(
@@ -59,8 +64,8 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     SectionTitle(
-                        titulo = "Hola, ${perfil?.primerNombre() ?: "estudiante"}",
-                        subtitulo = "Bienvenido al módulo de orientación vocacional UAM"
+                        titulo = "Hola, ${perfil?.fullName?.split(" ")?.firstOrNull() ?: "Estudiante"}",
+                        subtitulo = "Bienvenido a tu panel de orientación"
                     )
 
                     ModernCard {
@@ -69,26 +74,26 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = perfil?.nombre ?: "Estudiante",
+                            text = perfil?.fullName ?: "Usuario Nepsis",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = UamPrimary
                         )
 
                         Text(
-                            text = "Colegio: ${perfil?.colegio ?: "No registrado"}",
+                            text = "Nivel: ${perfil?.level ?: 1}",
                             color = UamTextSecondary
                         )
 
                         Text(
-                            text = "Correo: ${perfil?.correo ?: "No registrado"}",
+                            text = "Correo: ${perfil?.email ?: "No registrado"}",
                             color = UamTextSecondary
                         )
                     }
 
                     ModernCard {
                         Text(
-                            text = "Objetivo del proyecto",
+                            text = "Estado de Salud Mental",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -97,32 +102,9 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "Apoyar la orientación profesional de estudiantes que egresan de secundaria y aspiran a ingresar a la universidad.",
+                            text = "Tienes ${homeState.moods.size} registros de estado de ánimo. ¡Sigue así!",
                             color = UamTextSecondary
                         )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        InfoPill(text = "Tema elegido: Test Vocacional")
-                    }
-
-                    ModernCard {
-                        Text(
-                            text = "Módulos propuestos",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = UamPrimary
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        VocacionalRepository.modulosPropuestos.forEachIndexed { index, modulo ->
-                            Text(
-                                text = "${index + 1}. $modulo",
-                                modifier = Modifier.padding(vertical = 5.dp),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
                     }
 
                     Row(
@@ -130,22 +112,22 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         StatCard(
-                            titulo = "Tests hechos",
-                            valor = historial.size.toString(),
-                            emoji = "📘",
+                            titulo = "Puntos",
+                            valor = perfil?.points?.toString() ?: "0",
+                            emoji = "🏆",
                             modifier = Modifier.weight(1f)
                         )
 
                         StatCard(
-                            titulo = "Última área",
-                            valor = ultimoResultado?.areaPrincipal?.titulo ?: "Sin resultado",
-                            emoji = "🎯",
+                            titulo = "Estado",
+                            valor = homeState.moods.firstOrNull()?.emotionalState ?: "Pendiente",
+                            emoji = "😊",
                             modifier = Modifier.weight(1f)
                         )
                     }
 
                     GradientButton(
-                        text = "Comenzar test vocacional",
+                        text = "Comenzar nuevo test",
                         onClick = onIniciarTest
                     )
 

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface NepsisRepository {
     // Lectura local (siempre rápida, sin internet)
     fun getLocalMoods(): Flow<List<DailyMoodEntity>>
+    fun getLocalTestResults(): Flow<List<TestResultEntity>>
     
     // Guardado local e intento de sincronización
     suspend fun saveDailyMood(mood: DailyMoodEntity, token: String): Resource<Unit>

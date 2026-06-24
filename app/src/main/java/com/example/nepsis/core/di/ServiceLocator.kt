@@ -6,8 +6,10 @@ import com.example.nepsis.core.network.RetrofitClient
 import com.example.nepsis.data.local.NepsisDatabase
 import com.example.nepsis.data.repository.AuthRepositoryImpl
 import com.example.nepsis.data.repository.NepsisRepositoryImpl
+import com.example.nepsis.data.repository.ProfileRepositoryImpl
 import com.example.nepsis.domain.repository.AuthRepository
 import com.example.nepsis.domain.repository.NepsisRepository
+import com.example.nepsis.domain.repository.ProfileRepository
 
 object ServiceLocator {
     private var database: NepsisDatabase? = null
@@ -33,5 +35,12 @@ object ServiceLocator {
 
     fun provideAuthRepository(): AuthRepository {
         return AuthRepositoryImpl(api = RetrofitClient.supabaseService)
+    }
+
+    fun provideProfileRepository(context: Context): ProfileRepository {
+        return ProfileRepositoryImpl(
+            api = RetrofitClient.supabaseService,
+            dao = provideDatabase(context).nepsisDao()
+        )
     }
 }

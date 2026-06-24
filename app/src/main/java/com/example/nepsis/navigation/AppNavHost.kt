@@ -37,9 +37,7 @@ fun AppNavHost(
     ) {
         composable(route = AppDestinations.LOGIN) {
             LoginScreen(
-                onIngresar = { nuevoPerfil ->
-                    onLogin(nuevoPerfil)
-
+                onLoginSuccess = {
                     navController.navigate(AppDestinations.HOME) {
                         popUpTo(AppDestinations.LOGIN) {
                             inclusive = true
@@ -118,10 +116,7 @@ fun AppNavHost(
         }
 
         composable(route = AppDestinations.PROFILE) {
-            ProfileScreen(
-                perfil = perfil,
-                historial = historial
-            )
+            ProfileScreen()
         }
     }
 }
