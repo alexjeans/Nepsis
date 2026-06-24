@@ -28,6 +28,9 @@ interface NepsisDao {
 
     // Tests & Resultados
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTest(test: TestEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTestResult(result: TestResultEntity): Long
 
     @Query("SELECT * FROM test_results WHERE isSynced = 0")
