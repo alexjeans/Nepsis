@@ -21,6 +21,7 @@ import com.example.nepsis.presentation.login.LoginScreen
 import com.example.nepsis.presentation.login.LoginViewModel
 import com.example.nepsis.presentation.login.LoginViewModelFactory
 import com.example.nepsis.presentation.profile.ProfileScreen
+import com.example.nepsis.presentation.test.TestDetailScreen
 import com.example.nepsis.presentation.test.TestScreen
 
 @Composable
@@ -134,7 +135,14 @@ fun AppNavHost(
             arguments = listOf(navArgument("testId") { type = NavType.StringType })
         ) { backStackEntry ->
             val testId = backStackEntry.arguments?.getString("testId") ?: ""
-            Text(text = "Detalle del Test ID: $testId")
+            
+            TestDetailScreen(
+                testId = testId,
+                onNavigateBack = { navController.popBackStack() },
+                onStartTest = { id ->
+                    navController.navigate(AppDestinations.TestQuestions.createRoute(id))
+                }
+            )
         }
 
         composable(
