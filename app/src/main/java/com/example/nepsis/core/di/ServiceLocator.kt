@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import com.example.nepsis.core.network.RetrofitClient
 import com.example.nepsis.data.local.NepsisDatabase
+import com.example.nepsis.data.repository.AuthRepositoryImpl
 import com.example.nepsis.data.repository.NepsisRepositoryImpl
+import com.example.nepsis.domain.repository.AuthRepository
 import com.example.nepsis.domain.repository.NepsisRepository
 
 object ServiceLocator {
@@ -27,5 +29,9 @@ object ServiceLocator {
             api = RetrofitClient.supabaseService,
             dao = provideDatabase(context).nepsisDao()
         )
+    }
+
+    fun provideAuthRepository(): AuthRepository {
+        return AuthRepositoryImpl(api = RetrofitClient.supabaseService)
     }
 }
