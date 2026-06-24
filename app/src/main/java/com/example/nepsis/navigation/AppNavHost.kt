@@ -4,13 +4,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.nepsis.core.di.ServiceLocator
 import com.example.nepsis.presentation.history.HistoryScreen
+import com.example.nepsis.presentation.home.DailyCheckInScreen
 import com.example.nepsis.presentation.home.HomeScreen
+import com.example.nepsis.presentation.home.HomeViewModel
+import com.example.nepsis.presentation.home.HomeViewModelFactory
 import com.example.nepsis.presentation.login.LoginScreen
 import com.example.nepsis.presentation.profile.ProfileScreen
 
@@ -47,13 +53,15 @@ fun AppNavHost(
         composable(AppDestinations.Home.route) {
             HomeScreen(
                 onIniciarTest = {
-                    // Por ahora redirigimos a la librería de tests o directamente al test vocacional
                     navController.navigate(AppDestinations.TestLibrary.route)
                 },
                 onCerrarSesion = {
                     navController.navigate(AppDestinations.Login.route) {
                         popUpTo(AppDestinations.Home.route) { inclusive = true }
                     }
+                },
+                onNavigateToDailyCheckIn = {
+                    navController.navigate(AppDestinations.DailyCheckIn.route)
                 }
             )
         }
@@ -73,7 +81,18 @@ fun AppNavHost(
 
         // --- 3. SUB-FLOWS (PANTALLA COMPLETA) ---
         composable(AppDestinations.DailyCheckIn.route) {
-            Text(text = "Pantalla Check-In Diario (Próximo paso)")
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModelFactory(
+                    ServiceLocator.provideNepsisRepository(LocalContext.current)
+                )
+            )
+            
+            DailyCheckInScreen(
+                viewModel = homeViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable(

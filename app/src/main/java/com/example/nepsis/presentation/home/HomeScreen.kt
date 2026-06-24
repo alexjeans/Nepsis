@@ -41,6 +41,7 @@ import com.example.nepsis.ui.theme.UamTextSecondary
 fun HomeScreen(
     onIniciarTest: () -> Unit,
     onCerrarSesion: () -> Unit,
+    onNavigateToDailyCheckIn: () -> Unit,
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(ServiceLocator.provideNepsisRepository(LocalContext.current))),
     profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(ServiceLocator.provideProfileRepository(LocalContext.current)))
 ) {
@@ -125,6 +126,11 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f)
                         )
                     }
+
+                    GradientButton(
+                        text = "Registro de ánimo diario",
+                        onClick = onNavigateToDailyCheckIn
+                    )
 
                     GradientButton(
                         text = "Comenzar nuevo test",
