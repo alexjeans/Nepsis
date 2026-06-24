@@ -22,6 +22,7 @@ import com.example.nepsis.presentation.login.LoginViewModel
 import com.example.nepsis.presentation.login.LoginViewModelFactory
 import com.example.nepsis.presentation.profile.ProfileScreen
 import com.example.nepsis.presentation.test.TestDetailScreen
+import com.example.nepsis.presentation.test.TestQuestionsScreen
 import com.example.nepsis.presentation.test.TestScreen
 
 @Composable
@@ -150,7 +151,17 @@ fun AppNavHost(
             arguments = listOf(navArgument("testId") { type = NavType.StringType })
         ) { backStackEntry ->
             val testId = backStackEntry.arguments?.getString("testId") ?: ""
-            Text(text = "Preguntas del Test ID: $testId")
+            
+            TestQuestionsScreen(
+                testId = testId,
+                onNavigateBack = { navController.popBackStack() },
+                onTestFinished = { score, resultText ->
+                    // Navegamos al resultado, limpiando las preguntas del backstack para que no pueda retroceder a ellas
+                    navController.navigate(AppDestinations.TestResult.createRoute(score, resultText)) {
+                        popUpTo(AppDestinations.TestDetail.route) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(
