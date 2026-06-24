@@ -21,6 +21,7 @@ import com.example.nepsis.presentation.login.LoginScreen
 import com.example.nepsis.presentation.login.LoginViewModel
 import com.example.nepsis.presentation.login.LoginViewModelFactory
 import com.example.nepsis.presentation.profile.ProfileScreen
+import com.example.nepsis.presentation.test.TestScreen
 
 @Composable
 fun AppNavHost(
@@ -38,7 +39,6 @@ fun AppNavHost(
             val sessionManager = ServiceLocator.provideSessionManager(context)
             
             LaunchedEffect(Unit) {
-                // Si ya tiene sesión, salta el Login
                 if (sessionManager.isLoggedIn()) {
                     navController.navigate(AppDestinations.Home.route) {
                         popUpTo(AppDestinations.Splash.route) { inclusive = true }
@@ -73,8 +73,8 @@ fun AppNavHost(
         // --- 2. MAIN FLOW (BOTTOM NAV) ---
         composable(AppDestinations.Home.route) {
             val context = LocalContext.current
-            val homeViewModel: com.example.nepsis.presentation.home.HomeViewModel = viewModel(
-                factory = com.example.nepsis.presentation.home.HomeViewModelFactory(
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModelFactory(
                     repository = ServiceLocator.provideNepsisRepository(context),
                     sessionManager = ServiceLocator.provideSessionManager(context)
                 )
@@ -89,8 +89,11 @@ fun AppNavHost(
         }
 
         composable(AppDestinations.TestLibrary.route) {
-            // Placeholder hasta implementar la librería de tests
-            Text(text = "Librería de Tests (Próximamente)")
+            TestScreen(
+                onNavigateToDetail = { testId ->
+                    navController.navigate(AppDestinations.TestDetail.createRoute(testId))
+                }
+            )
         }
 
         composable(AppDestinations.History.route) {
