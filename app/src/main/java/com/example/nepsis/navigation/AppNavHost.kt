@@ -27,6 +27,8 @@ import com.example.nepsis.presentation.profile.ProfileScreen
 import com.example.nepsis.presentation.test.TestDetailScreen
 import com.example.nepsis.presentation.test.TestQuestionsScreen
 import com.example.nepsis.presentation.test.TestScreen
+import com.example.nepsis.presentation.test.TestQuestionsViewModel
+import com.example.nepsis.presentation.test.TestQuestionsViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -104,7 +106,7 @@ fun AppNavHost(
         composable(AppDestinations.Onboarding.route) {
             val context = LocalContext.current
             val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
-            val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() } // DAO inyectado
+            val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
             
             val factory = object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
@@ -172,26 +174,17 @@ fun AppNavHost(
                 onNavigateToSettings = { navController.navigate(AppDestinations.Settings.route) },
                 onLogout = {
                     coroutineScope.launch {
-                        // 1. Limpiar credenciales de sesión locales (SharedPreferences)
                         sessionManager.clearSession()
-                        
-                        // 2. Limpiar Base de Datos local por completo (Room) en un hilo secundario
                         withContext(Dispatchers.IO) {
                             database.clearAllTables()
                         }
-                        
-                        // 3. Resetear el estado del Onboarding (DataStore)
                         userPrefs.saveOnboardingCompleted(false)
-                        
-                        // 4. Forzar el cierre de sesión de Google en el dispositivo
                         try {
                             val credentialManager = CredentialManager.create(context)
                             credentialManager.clearCredentialState(ClearCredentialStateRequest())
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
-                        
-                        // 5. Redirección limpia al Login sin historial previo
                         withContext(Dispatchers.Main) {
                             navController.navigate(AppDestinations.Login.route) {
                                 popUpTo(0) { inclusive = true }
@@ -245,10 +238,16 @@ fun AppNavHost(
             route = AppDestinations.TestQuestions.route,
             arguments = listOf(navArgument("testId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val testId = backStackEntry.arguments?.getString("testId") ?: ""
+            val testId = backStackEntry.arguments?.getString("testId") ?: "vocacional"
+            val context = LocalContext.current
+            
+            val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
+            val viewModel: TestQuestionsViewModel = viewModel(
+                factory = TestQuestionsViewModelFactory(dao, testId)
+            )
             
             TestQuestionsScreen(
-                testId = testId,
+                viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onTestFinished = { score, resultText ->
                     navController.navigate(AppDestinations.TestResult.createRoute(score, resultText)) {
