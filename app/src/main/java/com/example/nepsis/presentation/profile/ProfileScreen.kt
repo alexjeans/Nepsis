@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +36,8 @@ fun ProfileScreen(
             sessionManager = ServiceLocator.provideSessionManager(LocalContext.current)
         )
     ),
-    onLogout: () -> Unit = {} // Lo conectaremos en el siguiente paso
+    onNavigateToSettings: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val perfil = state.profile
@@ -146,6 +148,18 @@ fun ProfileScreen(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Configuración", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 
+                Button(
+                    onClick = onNavigateToSettings,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                    modifier = Modifier.fillMaxWidth().height(50.dp)
+                ) {
+                    Icon(Icons.Default.Settings, contentDescription = "Ajustes")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ajustes de la App", style = MaterialTheme.typography.titleMedium)
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Button(
                     onClick = { showLogoutDialog = true },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),

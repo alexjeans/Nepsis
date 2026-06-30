@@ -23,4 +23,6 @@ sealed class AppDestinations(val route: String) {
     object TestResult : AppDestinations("test_result/{score}/{resultText}") {
         fun createRoute(score: Int, text: String) = "test_result/$score/$text"
     }
+    
+    object Settings : AppDestinations("settings")
 }

@@ -27,6 +27,7 @@ import com.example.nepsis.presentation.profile.ProfileScreen
 import com.example.nepsis.presentation.test.TestDetailScreen
 import com.example.nepsis.presentation.test.TestQuestionsScreen
 import com.example.nepsis.presentation.test.TestScreen
+import com.example.nepsis.presentation.settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -161,6 +162,7 @@ fun AppNavHost(
             
             ProfileScreen(
                 viewModel = profileViewModel,
+                onNavigateToSettings = { navController.navigate(AppDestinations.Settings.route) },
                 onLogout = {
                     // Limpiamos los datos del usuario localmente
                     sessionManager.clearSession()
@@ -170,6 +172,12 @@ fun AppNavHost(
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        composable(AppDestinations.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
