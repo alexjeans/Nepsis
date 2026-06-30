@@ -24,35 +24,32 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showTermsDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Ajustes", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
-                    }
+                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Regresar") }
                 }
             )
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
+            modifier = Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState())
         ) {
             SettingsSectionTitle("Preferencias")
-            SettingsSwitchItem(icon = Icons.Default.ColorLens, title = "Modo Oscuro", isChecked = false, onCheckedChange = { })
+            SettingsSwitchItem(icon = Icons.Default.ColorLens, title = "Modo Oscuro", isChecked = false, onCheckedChange = { /* Requiere DataStore + CompositionLocal en Fase 3 */ })
             SettingsClickableItem(icon = Icons.Default.Language, title = "Idioma", subtitle = "Español", onClick = { })
-            SettingsSwitchItem(icon = Icons.Default.Notifications, title = "Notificaciones", isChecked = true, onCheckedChange = { })
+            SettingsSwitchItem(icon = Icons.Default.Notifications, title = "Notificaciones Diarias", isChecked = true, onCheckedChange = { /* Implementación base para WorkManager a futuro */ })
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             SettingsSectionTitle("Acerca de")
-            SettingsClickableItem(icon = Icons.Default.Policy, title = "Política de Privacidad", onClick = { })
-            SettingsClickableItem(icon = Icons.Default.Policy, title = "Términos y Condiciones", onClick = { })
+            SettingsClickableItem(icon = Icons.Default.Policy, title = "Política de Privacidad", onClick = { showPrivacyDialog = true })
+            SettingsClickableItem(icon = Icons.Default.Policy, title = "Términos y Condiciones", onClick = { showTermsDialog = true })
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -66,20 +63,43 @@ fun SettingsScreen(
         }
     }
 
+    // DIÁLOGO: POLÍTICA DE PRIVACIDAD
+    if (showPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDialog = false },
+            title = { Text("Política de Privacidad") },
+            text = { Text("Uso de datos:\nRecopilamos tus respuestas para generar tu perfil. Nepsis NO VENDE tus datos a terceros. Toda tu información se utiliza estrictamente para el funcionamiento interno de la app.\n\nResponsabilidad:\nTus datos están protegidos, pero mantenemos una responsabilidad limitada ante interrupciones de servicios de terceros (Google/Supabase).") },
+            confirmButton = { TextButton(onClick = { showPrivacyDialog = false }) { Text("Entendido") } }
+        )
+    }
+
+    // DIÁLOGO: TÉRMINOS Y CONDICIONES
+    if (showTermsDialog) {
+        AlertDialog(
+            onDismissRequest = { showTermsDialog = false },
+            title = { Text("Términos y Condiciones") },
+            text = { Text("Al usar Nepsis, aceptas hacer un uso responsable de la plataforma.\n\nAviso Importante:\nLos resultados de los tests NO SUSTITUYEN el asesoramiento, diagnóstico o tratamiento de un profesional de la salud mental o psicólogo.\n\nEl uso de esta app y la interpretación de sus resultados es bajo tu propia responsabilidad.") },
+            confirmButton = { TextButton(onClick = { showTermsDialog = false }) { Text("Aceptar") } }
+        )
+    }
+
+    // DIÁLOGO: ELIMINAR CUENTA
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar cuenta") },
-            text = { Text("Esta acción es irreversible. Se borrarán todos tus tests, historial y datos de la nube. ¿Estás seguro?") },
+            title = { Text("Si borras mis datos") },
+            text = { Text("Esta acción es permanente. Se eliminará tu cuenta, tu historial, tus estados de ánimo y todas tus preferencias en Nepsis para siempre.") },
             confirmButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Sí, eliminar", color = MaterialTheme.colorScheme.error)
+                TextButton(onClick = { 
+                    showDeleteDialog = false 
+                    // Aquí en el futuro llamarás a: authRepository.deleteUserSupabase()
+                    // Y luego ejecutarás la limpieza local (onLogout)
+                }) {
+                    Text("Borrar datos 😥", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
             }
         )
     }
@@ -87,13 +107,7 @@ fun SettingsScreen(
 
 @Composable
 fun SettingsSectionTitle(title: String, color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = color,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(start = 24.dp, top = 16.dp, bottom = 8.dp)
-    )
+    Text(text = title, style = MaterialTheme.typography.labelLarge, color = color, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 24.dp, top = 16.dp, bottom = 8.dp))
 }
 
 @Composable

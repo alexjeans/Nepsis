@@ -43,6 +43,7 @@ data class TestResultEntity(
     val testId: String,
     val totalScore: Int,
     val resultText: String,
+    val answersJson: String = "{}", // NUEVO: Guarda las respuestas
     val createdAt: Long = System.currentTimeMillis(),
-    val isSynced: Boolean = false // Offline-first flag
+    val isSynced: Boolean = false
 )

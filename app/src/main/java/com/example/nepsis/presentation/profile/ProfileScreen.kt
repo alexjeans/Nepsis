@@ -15,10 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.nepsis.data.local.entity.TestResultEntity
+import coil.compose.AsyncImage // <-- COIL IMPORTADO
 import com.example.nepsis.ui.components.ModernCard
 import com.example.nepsis.ui.components.UamBackground
 import java.text.SimpleDateFormat
@@ -27,6 +28,7 @@ import java.util.*
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
+    onNavigateToTest: (String) -> Unit = {}, // <-- NUEVO PARA LOS MÓDULOS
     onNavigateToSettings: () -> Unit = {},
     onNavigateToFullHistory: () -> Unit = {},
     onLogout: () -> Unit = {}
@@ -37,89 +39,71 @@ fun ProfileScreen(
     
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    val iniciales = perfil?.fullName
-        ?.trim()?.split(" ")?.mapNotNull { it.firstOrNull()?.uppercaseChar() }?.take(2)?.joinToString("") ?: "U"
+    val iniciales = perfil?.fullName?.trim()?.split(" ")?.mapNotNull { it.firstOrNull()?.uppercaseChar() }?.take(2)?.joinToString("") ?: "U"
 
-    // Detectar si los módulos están completados buscando en la lista real
     val personalidadResult = recentResults.firstOrNull { it.testId == "personalidad" }
     val lenguajeAmorResult = recentResults.firstOrNull { it.testId == "lenguaje_amor" }
+    val vocacionalResult = recentResults.firstOrNull { it.testId == "vocacional" } // <-- AÑADIDO
 
     UamBackground {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             
-            // 1. CABECERA DEL PERFIL
+            // 1. CABECERA DEL PERFIL CON IMAGEN DE GOOGLE
             ModernCard {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondary)
-                            .padding(28.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = iniciales,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Black
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    if (!perfil?.avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = perfil!!.avatarUrl,
+                            contentDescription = "Foto de perfil de Google",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.padding(16.dp).size(80.dp).clip(CircleShape)
                         )
+                    } else {
+                        Box(
+                            modifier = Modifier.padding(16.dp).size(80.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = iniciales, color = MaterialTheme.colorScheme.onSecondary, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
+                        }
                     }
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Text(
-                        text = perfil?.fullName ?: "Usuario Nepsis",
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = perfil?.email ?: "Sin correo",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                    
+                    Text(text = perfil?.fullName ?: "Usuario Nepsis", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    Text(text = perfil?.email ?: "Sin correo", color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                     
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         perfil?.age?.let { edad -> if (edad > 0) BadgeInfo(text = "$edad años") }
                         perfil?.gender?.let { gen -> if (gen.isNotBlank()) BadgeInfo(text = gen) }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    perfil?.goal?.let { obj ->
-                        if (obj.isNotBlank()) BadgeInfo(text = "Objetivo: $obj", modifier = Modifier.fillMaxWidth())
                     }
                 }
             }
 
-            // 2. MÓDULOS DE TESTS REALES
+            // 2. MÓDULOS DE TESTS CON BOTÓN REALIZAR FUNCIONAL
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Tus Módulos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 
                 ModuleCard(
                     title = "Personalidad (MBTI)",
-                    statusText = personalidadResult?.resultText ?: "No encontrado",
+                    statusText = personalidadResult?.resultText ?: "No completado",
                     isCompleted = personalidadResult != null,
-                    onClick = { }
+                    onClick = { onNavigateToTest("personalidad") } // BOTÓN ARREGLADO
                 )
                 
                 ModuleCard(
                     title = "Lenguaje del Amor",
-                    statusText = lenguajeAmorResult?.resultText ?: "No encontrado",
+                    statusText = lenguajeAmorResult?.resultText ?: "No completado",
                     isCompleted = lenguajeAmorResult != null,
-                    onClick = { }
+                    onClick = { onNavigateToTest("lenguaje_amor") } // BOTÓN ARREGLADO
+                )
+
+                ModuleCard(
+                    title = "Test Vocacional",
+                    statusText = vocacionalResult?.resultText ?: "No completado",
+                    isCompleted = vocacionalResult != null,
+                    onClick = { onNavigateToTest("vocacional") } // BOTÓN AÑADIDO Y ARREGLADO
                 )
             }
 
@@ -157,7 +141,6 @@ fun ProfileScreen(
                                     Text(dateStr, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Text("Resultado: ${result.resultText}", style = MaterialTheme.typography.bodyMedium)
-                                Text("Puntuación: ${result.totalScore}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                             }
                         }
                     }
@@ -176,30 +159,17 @@ fun ProfileScreen(
             // 4. CONFIGURACIÓN
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Configuración", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                
-                Button(
-                    onClick = onNavigateToSettings,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
-                    modifier = Modifier.fillMaxWidth().height(50.dp)
-                ) {
+                Button(onClick = onNavigateToSettings, modifier = Modifier.fillMaxWidth().height(50.dp)) {
                     Icon(Icons.Default.Settings, contentDescription = "Ajustes")
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ajustes de la App", style = MaterialTheme.typography.titleMedium)
+                    Text("Ajustes de la App")
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = { showLogoutDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth().height(50.dp)
-                ) {
+                Button(onClick = { showLogoutDialog = true }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), modifier = Modifier.fillMaxWidth().height(50.dp)) {
                     Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión")
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cerrar Sesión", style = MaterialTheme.typography.titleMedium)
+                    Text("Cerrar Sesión")
                 }
             }
-            
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
@@ -210,20 +180,11 @@ fun ProfileScreen(
             title = { Text("Cerrar sesión") },
             text = { Text("¿Estás seguro de que deseas salir de tu cuenta?") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        showLogoutDialog = false
-                        onLogout()
-                    }
-                ) {
+                TextButton(onClick = { showLogoutDialog = false; onLogout() }) {
                     Text("Sí, salir", color = MaterialTheme.colorScheme.error)
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
+            dismissButton = { TextButton(onClick = { showLogoutDialog = false }) { Text("Cancelar") } }
         )
     }
 }

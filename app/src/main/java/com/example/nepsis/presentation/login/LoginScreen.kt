@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -18,6 +19,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import com.example.nepsis.BuildConfig
+import com.example.nepsis.R
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
@@ -109,6 +111,14 @@ fun LoginScreen(
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
+                // ICONO DE GOOGLE
+                Icon(
+                    painter = painterResource(id = R.mipmap.ic_google),
+                    contentDescription = "Logo Google",
+                    modifier = Modifier.size(24.dp),
+                    tint = androidx.compose.ui.graphics.Color.Unspecified
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Continuar con Google")
             }
         }

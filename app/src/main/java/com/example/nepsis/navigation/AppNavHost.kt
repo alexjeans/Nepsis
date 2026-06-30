@@ -187,6 +187,10 @@ fun AppNavHost(
             )
             ProfileScreen(
                 viewModel = profileViewModel,
+                onNavigateToTest = { testId -> 
+                    // CONECTA LOS MÓDULOS CON LOS TESTS
+                    navController.navigate(AppDestinations.TestDetail.createRoute(testId))
+                },
                 onNavigateToSettings = { navController.navigate(AppDestinations.Settings.route) },
                 onNavigateToFullHistory = { navController.navigate(AppDestinations.History.route) },
                 onLogout = {

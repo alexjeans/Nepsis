@@ -3,9 +3,11 @@ package com.example.nepsis.presentation.test
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+
 import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.data.local.dao.NepsisDao
 import com.example.nepsis.data.local.entity.TestResultEntity
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -97,11 +99,13 @@ class TestQuestionsViewModel(
 
     fun saveAndFinish(replace: Boolean) {
         _showReplaceDialog.value = false
-        
-        // Sumar puntuación temporal
+
         val total = _selectedAnswers.value.values.sum()
         _totalScore.value = total
         finalResultText = TestProvider.getResult(testId, total)
+
+        // Convertimos el mapa de respuestas a JSON
+        val answersJsonStr = Gson().toJson(_selectedAnswers.value)
 
         if (replace) {
             viewModelScope.launch {
@@ -110,27 +114,26 @@ class TestQuestionsViewModel(
                 val oldResult = previousResults.find { it.testId == testId }
 
                 if (oldResult != null) {
-                    // Actualiza el existente, evitando duplicados
                     val updatedResult = oldResult.copy(
                         totalScore = total,
                         resultText = finalResultText,
+                        answersJson = answersJsonStr, // NUEVO
                         createdAt = System.currentTimeMillis()
                     )
                     dao.updateTestResult(updatedResult)
                 } else {
-                    // Inserta nuevo
                     val newResult = TestResultEntity(
                         userId = userId,
                         testId = testId,
                         totalScore = total,
-                        resultText = finalResultText
+                        resultText = finalResultText,
+                        answersJson = answersJsonStr // NUEVO
                     )
                     dao.insertTestResult(newResult)
                 }
                 _isFinished.value = true
             }
         } else {
-            // Si el usuario cancela, no guardamos pero finalizamos para ver el resultado de todas formas
             _isFinished.value = true
         }
     }

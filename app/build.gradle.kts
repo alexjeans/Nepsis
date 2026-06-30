@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
+    // Dependencia para los iconos de NepsisBottomBar
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.material3)
     implementation(libs.androidx.espresso.core)
@@ -102,9 +103,13 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
-    // DataStore
+    // DataStore para preferencias locales (Onboarding)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    // NATIVA SPLASH SCREEN (NUEVO)
+    // Splash Screen
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Coil para imágenes y Gson
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
