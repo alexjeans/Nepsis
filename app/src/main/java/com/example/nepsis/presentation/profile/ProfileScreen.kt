@@ -1,26 +1,16 @@
 package com.example.nepsis.presentation.profile
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,10 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nepsis.core.di.ServiceLocator
-import com.example.nepsis.ui.components.InfoPill
 import com.example.nepsis.ui.components.ModernCard
-import com.example.nepsis.ui.components.SectionTitle
-import com.example.nepsis.ui.components.StatCard
 import com.example.nepsis.ui.components.UamBackground
 import com.example.nepsis.ui.theme.UamAccent
 import com.example.nepsis.ui.theme.UamPrimary
@@ -47,19 +34,16 @@ fun ProfileScreen(
             repository = ServiceLocator.provideProfileRepository(LocalContext.current),
             sessionManager = ServiceLocator.provideSessionManager(LocalContext.current)
         )
-    )
+    ),
+    onLogout: () -> Unit = {} // Lo conectaremos en el siguiente paso
 ) {
     val state by viewModel.state.collectAsState()
     val perfil = state.profile
+    
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     val iniciales = perfil?.fullName
-        ?.trim()
-        ?.split(" ")
-        ?.filter { it.isNotBlank() }
-        ?.mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }
-        ?.take(2)
-        ?.joinToString("")
-        ?: "U"
+        ?.trim()?.split(" ")?.mapNotNull { it.firstOrNull()?.uppercaseChar() }?.take(2)?.joinToString("") ?: "U"
 
     UamBackground {
         Column(
@@ -67,105 +51,182 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 })
-            ) {
+            
+            // 1. CABECERA DEL PERFIL
+            ModernCard {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    SectionTitle(
-                        titulo = "Mi Perfil",
-                        subtitulo = "Información de tu cuenta Nepsis"
-                    )
-
-                    ModernCard {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(UamAccent)
-                                    .padding(28.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = iniciales,
-                                    color = UamPrimaryDark,
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Black
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            Text(
-                                text = perfil?.fullName ?: "Usuario",
-                                color = UamPrimary,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Text(
-                                text = perfil?.email ?: "Sin correo vinculado",
-                                color = UamTextSecondary,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(UamAccent)
+                            .padding(28.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        StatCard(
-                            titulo = "Nivel",
-                            valor = perfil?.level?.toString() ?: "1",
-                            emoji = "⭐",
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        StatCard(
-                            titulo = "Puntos",
-                            valor = perfil?.points?.toString() ?: "0",
-                            emoji = "🏆",
-                            modifier = Modifier.weight(1f)
+                        Text(
+                            text = iniciales,
+                            color = UamPrimaryDark,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Black
                         )
                     }
-
-                    ModernCard {
-                        InfoPill(text = "Propósito")
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "Ruta Ingeniería en Sistemas - Psicología",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = UamPrimary,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = "Esta aplicación apoya la orientación profesional de estudiantes que egresan de secundaria y aspiran a ingresar a la universidad.",
-                            color = UamTextSecondary
-                        )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = perfil?.fullName ?: "Usuario Nepsis",
+                        color = UamPrimary,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = perfil?.email ?: "Sin correo",
+                        color = UamTextSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Chips de Información (Próximamente conectados a DataStore)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        BadgeInfo(text = "20 años")
+                        BadgeInfo(text = "Hombre")
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    BadgeInfo(text = "Objetivo: Conocerme mejor", modifier = Modifier.fillMaxWidth())
+                }
+            }
 
-                    ModernCard {
-                        InfoPill(text = "Nota importante")
+            // 2. MÓDULOS DE TESTS
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Tus Módulos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                
+                // Módulo completado (Simulado)
+                ModuleCard(
+                    title = "Personalidad (MBTI)",
+                    statusText = "Arquitecto (INTJ)",
+                    isCompleted = true,
+                    onClick = { /* TODO: Ver detalle */ }
+                )
+                
+                // Módulo pendiente (Simulado)
+                ModuleCard(
+                    title = "Lenguaje del Amor",
+                    statusText = "No encontrado",
+                    isCompleted = false,
+                    onClick = { /* TODO: Ir a test */ }
+                )
+            }
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "La aplicación es educativa y orientativa. No realiza diagnósticos psicológicos ni reemplaza el acompañamiento profesional.",
-                            color = UamTextSecondary
-                        )
+            // 3. HISTORIAL INTEGRADO
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Historial Reciente", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                
+                // Elemento de historial simulado
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Test Vocacional", fontWeight = FontWeight.Bold)
+                        Text("Perfil: Ingeniería y Tecnología", style = MaterialTheme.typography.bodyMedium)
+                        Text("Hace 2 días", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                     }
                 }
+            }
+
+            // 4. CONFIGURACIÓN
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Configuración", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                
+                Button(
+                    onClick = { showLogoutDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth().height(50.dp)
+                ) {
+                    Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Cerrar Sesión", style = MaterialTheme.typography.titleMedium)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(80.dp)) // Espacio para la BottomBar
+        }
+    }
+
+    // Diálogo de confirmación para cerrar sesión
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Cerrar sesión") },
+            text = { Text("¿Estás seguro de que deseas salir de tu cuenta?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        onLogout()
+                    }
+                ) {
+                    Text("Sí, salir", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun BadgeInfo(text: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+    }
+}
+
+@Composable
+fun ModuleCard(title: String, statusText: String, isCompleted: Boolean, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = statusText, 
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isCompleted) MaterialTheme.colorScheme.primary else UamTextSecondary
+                )
+            }
+            if (!isCompleted) {
+                Button(onClick = onClick, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)) {
+                    Text("Realizar")
+                }
+            } else {
+                Icon(Icons.Default.Lock, contentDescription = "Completado", tint = MaterialTheme.colorScheme.primary)
             }
         }
     }
