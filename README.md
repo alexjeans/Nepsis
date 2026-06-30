@@ -1,23 +1,16 @@
 # Nepsis
 
-Nepsis es una aplicación Android de autoconocimiento y bienestar emocional. Combina tests diarios, evaluaciones personales y una experiencia gamificada para ayudar al usuario a conocer mejor su estado emocional y sus patrones personales.
+Nepsis es una aplicación Android de autoconocimiento y bienestar emocional. Su objetivo es convertirse en un espacio donde el usuario pueda conocerse mejor mediante tests, historial estructurado y, a futuro, inteligencia artificial. Todo gira en torno a un "Súper Perfil" dinámico, manteniendo un diseño minimalista, intuitivo y sin mecánicas de gamificación.
 
 ## Tecnologías
 
-- Kotlin
-- Jetpack Compose
-- Material 3
+- Kotlin & Jetpack Compose
+- Clean Architecture (MVVM)
+- Room Database (Persistencia Local)
+- Retrofit & Supabase (Backend y Sincronización)
+- DataStore (Preferencias y Onboarding)
+- Credential Manager (Google Login)
 - Navigation Compose
-- Android Studio
-- GitHub
-
-## Funciones actuales
-
-- Navegación funcional entre pantallas
-- Inicio, Test, Historial y Perfil
-- Bottom Navigation
-- Flujo base: Inicio → Test → Volver
-- Estructura modular por packages
 
 ## Cómo ejecutar
 
@@ -28,55 +21,57 @@ Nepsis es una aplicación Android de autoconocimiento y bienestar emocional. Com
 
 ## Roadmap
 
-### Estado actual
-
+### Fase 0: Cimientos y Arquitectura (Completado)
 | Funcionalidad | Estado |
 |---|---|
-| Estructura base del proyecto | ✅ |
-| MainActivity y NepsisApp configurados | ✅ |
-| NavController y NavHost funcionando | ✅ |
-| Rutas centralizadas en AppDestinations | ✅ |
-| HomeScreen base creada | ✅ |
-| TestScreen base creada | ✅ |
-| HistoryScreen base creada | ✅ |
-| ProfileScreen base creada | ✅ |
-| Bottom Navigation integrada | ✅ |
-| Navegación mejorada para evitar duplicados | ✅ |
+| Estructura Clean Architecture (MVVM) | ✅ |
+| Base de Datos Local (Room configurado) | ✅ |
+| Conexión Backend (Supabase + Retrofit) | ✅ |
+| Login base con Google (Credential Manager) | ✅ |
+| Navegación centralizada (AppDestinations) | ✅ |
+| Flujo interactivo de Tests (MVP) | ✅ |
 
-### Próxima versión
-
+### Fase 1: Autenticación y Onboarding (Completado)
 | Funcionalidad | Estado |
 |---|---|
-| Home con contenido real | ⏳ |
-| Test diario destacado | ⏳ |
-| Tests recomendados | ⏳ |
-| Preguntas reales en TestScreen | ⏳ |
-| Selección de respuestas | ⏳ |
-| Resultado final del test | ⏳ |
-| Historial con mock data | ⏳ |
-| Perfil con nivel, racha y puntos | ⏳ |
-| Ocultar bottom navigation en TestScreen | ⏳ |
-| Mejora visual de cards y layout | ⏳ |
-| Indicador de progreso del test | ⏳ |
-| Estados vacíos para historial | ⏳ |
+| Mejora UI Login (Correo/Contraseña visual) | ✅ |
+| Control de Primer Ingreso (DataStore) | ✅ |
+| Onboarding: Bienvenida | ✅ |
+| Onboarding: Información Básica | ✅ |
+| Onboarding: Objetivo Principal | ✅ |
+| Redirección inteligente (NavHost) | ✅ |
 
-### Visión futura
-
+### Fase 2: El Súper Perfil (En progreso)
 | Funcionalidad | Estado |
 |---|---|
-| Persistencia local de resultados | ❌ |
-| ViewModel por pantalla | ❌ |
-| Modelos de datos formales | ❌ |
-| Repositorio local | ❌ |
-| Sistema de logros | ❌ |
+| Limpieza de BottomBar (Inicio, Tests, Perfil) | ⏳ |
+| Cabecera dinámica de Perfil (Datos Onboarding)| ⏳ |
+| Módulos de Tests Dinámicos en Perfil | ⏳ |
+| Historial Integrado como sub-sección | ⏳ |
+| Cierre de sesión (Limpieza BD y DataStore) | ⏳ |
+| Pantalla de Configuración base | ⏳ |
+
+### Fase 3: UX y Diseño Moderno (Futuro)
+| Funcionalidad | Estado |
+|---|---|
+| Splash Screen Nativo y Launcher Icon | ❌ |
+| Skeletons de carga (Efecto Shimmer) | ❌ |
+| Transiciones suaves entre pantallas | ❌ |
+| Pull to Refresh en Inicio/Perfil | ❌ |
+| Snackbars de feedback visual | ❌ |
+
+### Fase 4: Escalabilidad de Tests (Futuro)
+| Funcionalidad | Estado |
+|---|---|
+| Estructura genérica JSON en Room | ❌ |
+| Arquitectura para nuevos tests (MBTI, etc.) | ❌ |
+| Racha Diaria (Retención no gamificada) | ❌ |
+
+### Fase 5 y 6: Inteligencia Artificial y Nube (Visión a Largo Plazo)
+| Funcionalidad | Estado |
+|---|---|
+| Análisis cruzado de resultados con IA | ❌ |
 | Recomendaciones personalizadas | ❌ |
-| Biblioteca de tests por categorías | ❌ |
-| Resumen semanal de progreso | ❌ |
-| Gráficas de evolución | ❌ |
-| Recordatorios diarios | ❌ |
-| Diario personal | ❌ |
-| Sincronización en la nube | ❌ |
-| Inicio de sesión | ❌ |
-| Exportación de resultados | ❌ |
-| Modo oscuro personalizado | ❌ |
-| Internacionalización | ❌ |
+| Autenticación propia real (Supabase Auth) | ❌ |
+| Sincronización offline estricta | ❌ |
+| Exportación de perfil y datos (PDF/JSON) | ❌ |
