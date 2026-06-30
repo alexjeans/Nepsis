@@ -113,7 +113,7 @@ fun LoginScreen(
             ) {
                 // ICONO DE GOOGLE
                 Icon(
-                    painter = painterResource(id = R.mipmap.ic_google),
+                    painter = painterResource(id = R.mipmap.ic_google_foreground),
                     contentDescription = "Logo Google",
                     modifier = Modifier.size(24.dp),
                     tint = androidx.compose.ui.graphics.Color.Unspecified
