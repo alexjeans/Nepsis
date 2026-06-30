@@ -41,24 +41,24 @@ Nepsis es una aplicación Android de autoconocimiento y bienestar emocional. Su 
 | Onboarding: Objetivo Principal | ✅ |
 | Redirección inteligente (NavHost) | ✅ |
 
-### Fase 2: El Súper Perfil (En progreso)
+### Fase 2: El Súper Perfil (Completado)
 | Funcionalidad | Estado |
 |---|---|
-| Limpieza de BottomBar (Inicio, Tests, Perfil) | ⏳ |
-| Cabecera dinámica de Perfil (Datos Onboarding)| ⏳ |
-| Módulos de Tests Dinámicos en Perfil | ⏳ |
-| Historial Integrado como sub-sección | ⏳ |
-| Cierre de sesión (Limpieza BD y DataStore) | ⏳ |
-| Pantalla de Configuración base | ⏳ |
+| Limpieza de BottomBar (Inicio, Tests, Perfil) | ✅ |
+| Cabecera dinámica de Perfil (Datos Onboarding)| ✅ |
+| Módulos de Tests Dinámicos en Perfil | ✅ |
+| Historial Integrado como sub-sección | ✅ |
+| Cierre de sesión (Limpieza BD y DataStore) | ✅ |
+| Pantalla de Configuración base | ✅ |
 
-### Fase 3: UX y Diseño Moderno (Futuro)
+### Fase 3: UX y Diseño Moderno (En progreso)
 | Funcionalidad | Estado |
 |---|---|
-| Splash Screen Nativo y Launcher Icon | ❌ |
-| Skeletons de carga (Efecto Shimmer) | ❌ |
-| Transiciones suaves entre pantallas | ❌ |
-| Pull to Refresh en Inicio/Perfil | ❌ |
-| Snackbars de feedback visual | ❌ |
+| Splash Screen Nativo y Launcher Icon | ⏳ |
+| Skeletons de carga (Efecto Shimmer) | ⏳ |
+| Transiciones suaves entre pantallas | ⏳ |
+| Pull to Refresh en Inicio/Perfil | ⏳ |
+| Snackbars de feedback visual | ⏳ |
 
 ### Fase 4: Escalabilidad de Tests (Futuro)
 | Funcionalidad | Estado |
