@@ -5,15 +5,15 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val LightColorScheme = lightColorScheme(
-    primary = UamPrimary,
-    onPrimary = White,
-    secondary = UamSuccess,
-    onSecondary = White,
-    tertiary = UamWarning,
-    background = UamBackground,
-    onBackground = UamTextPrimary,
-    surface = UamSurface,
-    onSurface = UamTextPrimary
+    primary = NepsisGreenMain,
+    onPrimary = NepsisTextPrimary,
+    secondary = NepsisGreenAccent,
+    onSecondary = NepsisTextPrimary,
+    tertiary = NepsisGreenDark,
+    background = NepsisBackground,
+    onBackground = NepsisTextPrimary,
+    surface = White,
+    onSurface = NepsisTextPrimary
 )
 
 @Composable

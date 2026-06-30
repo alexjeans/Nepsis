@@ -15,17 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.nepsis.data.local.entity.TestResultEntity
 import com.example.nepsis.ui.components.ModernCard
 import com.example.nepsis.ui.components.UamBackground
-import com.example.nepsis.ui.theme.UamAccent
-import com.example.nepsis.ui.theme.UamPrimary
-import com.example.nepsis.ui.theme.UamPrimaryDark
-import com.example.nepsis.ui.theme.UamTextSecondary
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -67,13 +62,13 @@ fun ProfileScreen(
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(UamAccent)
+                            .background(MaterialTheme.colorScheme.secondary)
                             .padding(28.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = iniciales,
-                            color = UamPrimaryDark,
+                            color = MaterialTheme.colorScheme.tertiary,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Black
                         )
@@ -81,14 +76,14 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
                         text = perfil?.fullName ?: "Usuario Nepsis",
-                        color = UamPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = perfil?.email ?: "Sin correo",
-                        color = UamTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                     
@@ -136,7 +131,7 @@ fun ProfileScreen(
                     Text(
                         text = "No hay intentos registrados.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = UamTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 } else {
@@ -159,7 +154,7 @@ fun ProfileScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(testTitle, fontWeight = FontWeight.Bold)
-                                    Text(dateStr, style = MaterialTheme.typography.labelSmall, color = UamTextSecondary)
+                                    Text(dateStr, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Text("Resultado: ${result.resultText}", style = MaterialTheme.typography.bodyMedium)
                                 Text("Puntuación: ${result.totalScore}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
@@ -265,7 +260,7 @@ fun ModuleCard(title: String, statusText: String, isCompleted: Boolean, onClick:
                 Text(
                     text = statusText, 
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (isCompleted) MaterialTheme.colorScheme.primary else UamTextSecondary
+                    color = if (isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (!isCompleted) {

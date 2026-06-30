@@ -34,13 +34,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.nepsis.ui.theme.UamAccent
-import com.example.nepsis.ui.theme.UamPrimary
-import com.example.nepsis.ui.theme.UamPrimaryDark
-import com.example.nepsis.ui.theme.UamPrimaryLight
-import com.example.nepsis.ui.theme.UamSurface
-import com.example.nepsis.ui.theme.UamTextSecondary
 import com.example.nepsis.ui.theme.White
+import com.example.nepsis.ui.theme.NepsisGreenAccent
+import com.example.nepsis.ui.theme.NepsisGreenMain
+import com.example.nepsis.ui.theme.NepsisGreenDark
+import com.example.nepsis.ui.theme.NepsisTextSecondary
 
 @Composable
 fun UamBackground(
@@ -52,7 +50,7 @@ fun UamBackground(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        UamAccent,
+                        MaterialTheme.colorScheme.secondary,
                         MaterialTheme.colorScheme.background,
                         White
                     )
@@ -64,7 +62,7 @@ fun UamBackground(
                 .size(260.dp)
                 .offset(x = (-120).dp, y = (-90).dp)
                 .clip(CircleShape)
-                .background(UamPrimary.copy(alpha = 0.13f))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.13f))
         )
 
         Box(
@@ -72,7 +70,7 @@ fun UamBackground(
                 .size(210.dp)
                 .offset(x = 250.dp, y = 120.dp)
                 .clip(CircleShape)
-                .background(UamPrimaryLight.copy(alpha = 0.16f))
+                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f))
         )
 
         content()
@@ -85,39 +83,38 @@ fun ModernCard(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val cardContent: @Composable ColumnScope.() -> Unit = {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            content = content
+        )
+    }
+
     if (onClick != null) {
         Card(
             onClick = onClick,
             modifier = modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
-                containerColor = UamSurface
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 7.dp
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                content = content
-            )
-        }
+            ),
+            content = cardContent
+        )
     } else {
         Card(
             modifier = modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
-                containerColor = UamSurface
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 7.dp
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                content = content
-            )
-        }
+            ),
+            content = cardContent
+        )
     }
 }
 
@@ -140,8 +137,8 @@ fun GradientButton(
             .background(
                 Brush.horizontalGradient(
                     listOf(
-                        UamPrimary,
-                        UamPrimaryDark
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.tertiary
                     )
                 )
             )
@@ -175,7 +172,7 @@ fun SoftButton(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = UamPrimary
+            contentColor = MaterialTheme.colorScheme.primary
         ),
         contentPadding = PaddingValues(vertical = 14.dp)
     ) {
@@ -202,7 +199,7 @@ fun SectionTitle(
         if (subtitulo != null) {
             Text(
                 text = subtitulo,
-                color = UamTextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -216,12 +213,12 @@ fun InfoPill(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50.dp))
-            .background(UamAccent)
+            .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
         Text(
             text = text,
-            color = UamPrimaryDark,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.bodySmall
         )
@@ -242,7 +239,7 @@ fun StatCard(
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(UamAccent)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
                     .padding(12.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -254,14 +251,14 @@ fun StatCard(
             Column {
                 Text(
                     text = titulo,
-                    color = UamTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
                     text = valor,
-                    color = UamPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start

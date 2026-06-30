@@ -10,7 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.nepsis.ui.components.ModernCard
 import com.example.nepsis.ui.components.UamBackground
-import com.example.nepsis.ui.theme.UamTextSecondary
+import com.example.nepsis.ui.theme.NepsisTextSecondary
 
 @Composable
 fun TestScreen(
@@ -34,7 +34,7 @@ fun TestScreen(
             Text(
                 text = "Descubre más sobre ti realizando estas evaluaciones.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = UamTextSecondary
+                color = NepsisTextSecondary
             )
 
             // 1. Test de Personalidad (ID corregido)
@@ -85,7 +85,7 @@ fun TestCard(title: String, category: String, description: String, onClick: () -
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = UamTextSecondary
+                color = NepsisTextSecondary
             )
         }
     }

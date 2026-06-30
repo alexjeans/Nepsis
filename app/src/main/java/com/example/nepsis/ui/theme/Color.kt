@@ -2,20 +2,12 @@ package com.example.nepsis.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val UamPrimary = Color(0xFF0097A7)
-val UamPrimaryDark = Color(0xFF006978)
-val UamPrimaryLight = Color(0xFF5FCBD8)
+val NepsisGreenMain = Color(0xFFC7D381) 
+val NepsisGreenAccent = Color(0xFFD1EB87)
+val NepsisGreenDark = Color(0xFF4A5D23) 
+val NepsisBackground = Color(0xFFF9FAF5) 
 
-val UamAccent = Color(0xFFE0F7FA)
-val UamAccentStrong = Color(0xFFB2EBF2)
-
-val UamBackground = Color(0xFFF5FBFC)
-val UamSurface = Color(0xFFFFFFFF)
-
-val UamTextPrimary = Color(0xFF172026)
-val UamTextSecondary = Color(0xFF60717A)
-
-val UamSuccess = Color(0xFF00796B)
-val UamWarning = Color(0xFFFFA000)
+val NepsisTextPrimary = Color(0xFF172026)
+val NepsisTextSecondary = Color(0xFF60717A)
 
 val White = Color(0xFFFFFFFF)
