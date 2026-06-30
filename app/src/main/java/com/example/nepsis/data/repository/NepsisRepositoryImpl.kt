@@ -15,7 +15,7 @@ class NepsisRepositoryImpl(
     private val dao: NepsisDao
 ) : NepsisRepository {
 
-    override fun getLocalMoods(): Flow<List<DailyMoodEntity>> = dao.getAllDailyMoods()
+    override fun getLocalMoods(userId: String): Flow<List<DailyMoodEntity>> = dao.getDailyMoodsByUserId(userId)
 
     override fun getLocalTestResults(): Flow<List<TestResultEntity>> = dao.getAllTestResults()
 

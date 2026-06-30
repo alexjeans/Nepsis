@@ -33,8 +33,15 @@ class HomeViewModel(
     }
 
     private fun loadLocalMoods() {
+        val userId = sessionManager.getUserId()
+        
+        if (userId == null) {
+            _state.value = _state.value.copy(error = "No hay sesión activa")
+            return
+        }
+
         viewModelScope.launch {
-            repository.getLocalMoods()
+            repository.getLocalMoods(userId)
                 .catch { e -> _state.value = _state.value.copy(error = e.message) }
                 .collect { moods ->
                     _state.value = _state.value.copy(moods = moods)

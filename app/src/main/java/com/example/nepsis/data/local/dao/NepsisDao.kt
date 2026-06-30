@@ -20,8 +20,8 @@ interface NepsisDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDailyMood(mood: DailyMoodEntity): Long
 
-    @Query("SELECT * FROM daily_moods ORDER BY date DESC")
-    fun getAllDailyMoods(): Flow<List<DailyMoodEntity>>
+    @Query("SELECT * FROM daily_moods WHERE userId = :userId ORDER BY date DESC")
+    fun getDailyMoodsByUserId(userId: String): Flow<List<DailyMoodEntity>>
 
     @Query("SELECT * FROM daily_moods WHERE isSynced = 0")
     suspend fun getUnsyncedMoods(): List<DailyMoodEntity>
