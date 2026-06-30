@@ -63,7 +63,7 @@ object TestProvider {
                     Option("La frialdad física y falta de contacto", 1)
                 ))
             )
-            else -> listOf( // Test Vocacional por defecto
+            else -> listOf(
                 Question(1, "¿Qué actividad disfrutas más en tu tiempo libre?", listOf(
                     Option("Armar computadoras, programar o resolver lógica", 3),
                     Option("Leer sobre comportamiento humano o ayudar a otros", 2),
@@ -87,7 +87,8 @@ object TestProvider {
         return when (testId) {
             "personalidad" -> if (score >= 7) "Extrovertido y Analítico" else "Introvertido y Emocional"
             "lenguaje_amor" -> if (score >= 7) "Palabras de Afirmación y Tiempo de Calidad" else "Contacto Físico y Actos de Servicio"
-            else -> if (score >= 7) "Perfil Tecnológico / Ingeniería" else "Perfil Humanista / Creativo"
+            // CRASH SOLUCIONADO: Se cambió la barra "/" por un guion "-"
+            else -> if (score >= 7) "Perfil Tecnológico - Ingeniería" else "Perfil Humanista - Creativo"
         }
     }
 }

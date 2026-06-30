@@ -259,8 +259,10 @@ fun AppNavHost(
             val context = LocalContext.current
             
             val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
+            val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
+            
             val viewModel: TestQuestionsViewModel = viewModel(
-                factory = TestQuestionsViewModelFactory(dao, testId)
+                factory = TestQuestionsViewModelFactory(dao, sessionManager, testId)
             )
             
             TestQuestionsScreen(
