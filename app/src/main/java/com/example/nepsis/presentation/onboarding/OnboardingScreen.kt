@@ -60,6 +60,20 @@ fun OnboardingScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Lógica de validación estricta por página
+                val nameState by viewModel.name.collectAsState()
+                val ageState by viewModel.age.collectAsState()
+                val genderState by viewModel.gender.collectAsState()
+                val goalState by viewModel.goal.collectAsState()
+
+                val isPageValid = when (pagerState.currentPage) {
+                    0 -> true // Welcome Page siempre válida
+                    1 -> nameState.isNotBlank() && ageState.isNotBlank() && genderState.isNotBlank()
+                    2 -> goalState.isNotBlank()
+                    3 -> true // Final Page siempre válida
+                    else -> false
+                }
+
                 // Botón Atrás (Oculto en la primera y última página)
                 if (pagerState.currentPage in 1..2) {
                     TextButton(onClick = {
@@ -73,8 +87,9 @@ fun OnboardingScreen(
                     Spacer(modifier = Modifier.width(64.dp))
                 }
 
-                // Botón Siguiente / Finalizar
+                // Botón Siguiente / Finalizar (Desactivado si falta información)
                 Button(
+                    enabled = isPageValid, // ESTO BLOQUEA AL USUARIO
                     onClick = {
                         coroutineScope.launch {
                             if (pagerState.currentPage < 3) {

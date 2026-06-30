@@ -92,17 +92,27 @@ fun ProfileScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Chips de Información (Próximamente conectados a DataStore)
+                    // Chips de Información Dinámicos
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BadgeInfo(text = "20 años")
-                        BadgeInfo(text = "Hombre")
+                        perfil?.age?.let { siTieneEdad -> 
+                            if (siTieneEdad > 0) BadgeInfo(text = "$siTieneEdad años") 
+                        }
+                        
+                        perfil?.gender?.let { siTieneGenero ->
+                            if (siTieneGenero.isNotBlank()) BadgeInfo(text = siTieneGenero)
+                        }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    BadgeInfo(text = "Objetivo: Conocerme mejor", modifier = Modifier.fillMaxWidth())
+                    
+                    perfil?.goal?.let { siTieneObjetivo ->
+                        if (siTieneObjetivo.isNotBlank()) {
+                            BadgeInfo(text = "Objetivo: $siTieneObjetivo", modifier = Modifier.fillMaxWidth())
+                        }
+                    }
                 }
             }
 

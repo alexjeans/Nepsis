@@ -104,11 +104,12 @@ fun AppNavHost(
         composable(AppDestinations.Onboarding.route) {
             val context = LocalContext.current
             val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
+            val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() } // DAO inyectado
             
             val factory = object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return OnboardingViewModel(userPrefs) as T
+                    return OnboardingViewModel(userPrefs, dao) as T
                 }
             }
             val viewModel: OnboardingViewModel = viewModel(factory = factory)

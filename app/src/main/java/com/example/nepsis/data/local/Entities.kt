@@ -10,7 +10,11 @@ data class ProfileEntity(
     val fullName: String,
     val avatarUrl: String?,
     val level: Int,
-    val points: Int
+    val points: Int,
+    // NUEVOS CAMPOS AÑADIDOS:
+    val age: Int? = null,
+    val gender: String? = null,
+    val goal: String? = null
 )
 
 @Entity(tableName = "daily_moods")
