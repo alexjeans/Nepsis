@@ -2,8 +2,11 @@ package com.example.nepsis.presentation.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nepsis.core.utils.Resource
+import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.core.utils.UserPreferences
 import com.example.nepsis.data.local.dao.NepsisDao
+import com.example.nepsis.domain.repository.ProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +15,9 @@ import kotlinx.coroutines.launch
 
 class OnboardingViewModel(
     private val userPreferences: UserPreferences,
-    private val dao: NepsisDao // Inyectamos el DAO para guardar el perfil local
+    private val dao: NepsisDao,
+    private val profileRepository: ProfileRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     var name = MutableStateFlow("")
@@ -25,23 +30,36 @@ class OnboardingViewModel(
 
     fun completeOnboarding() {
         viewModelScope.launch {
-            // 1. Obtenemos el perfil actual (creado en el Login)
-            val currentProfile = dao.getProfile().firstOrNull()
-            
-            // 2. Lo actualizamos con los datos del Onboarding
-            if (currentProfile != null) {
-                val updatedProfile = currentProfile.copy(
-                    fullName = name.value.ifBlank { currentProfile.fullName },
-                    age = age.value.toIntOrNull() ?: 0,
-                    gender = gender.value,
-                    goal = goal.value
-                )
-                dao.insertProfile(updatedProfile) // REPLACES el perfil viejo con el actualizado
-            }
+            val userId = sessionManager.getUserId() ?: return@launch
+            val token = sessionManager.getToken() ?: return@launch
+            val parsedAge = age.value.toIntOrNull() ?: 0
 
-            // 3. Marcamos el Onboarding como completado en DataStore
-            userPreferences.saveOnboardingCompleted(true)
-            _isCompleted.value = true
+            // 1. Mandar a Supabase
+            val result = profileRepository.updateRemoteProfile(
+                userId = userId,
+                token = token,
+                age = parsedAge,
+                gender = gender.value,
+                goal = goal.value
+            )
+
+            if (result is Resource.Success) {
+                // 2. Si hay éxito, actualizar Room
+                val currentProfile = dao.getProfileByUserId(userId).firstOrNull()
+                if (currentProfile != null) {
+                    val updatedProfile = currentProfile.copy(
+                        fullName = name.value.ifBlank { currentProfile.fullName },
+                        age = parsedAge,
+                        gender = gender.value,
+                        goal = goal.value
+                    )
+                    dao.insertProfile(updatedProfile) 
+                }
+                
+                // 3. Marcar el Onboarding como completado en DataStore
+                userPreferences.saveOnboardingCompleted(true)
+                _isCompleted.value = true
+            }
         }
     }
 }

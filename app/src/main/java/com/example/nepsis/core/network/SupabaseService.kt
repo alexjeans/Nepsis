@@ -39,4 +39,11 @@ interface SupabaseService {
         @Header("Authorization") bearerToken: String,
         @Query("id") idFilter: String // Se usará con formato "eq.USER_ID"
     ): Response<List<ProfileDto>>
+
+    @PATCH("rest/v1/profiles")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Query("id") userId: String, // Se pasará como "eq.ID"
+        @Body profileUpdate: ProfileUpdateDto
+    ): Response<Unit>
 }

@@ -49,3 +49,5 @@ data class ProfileDto(
     @SerializedName("level") val level: Int,
     @SerializedName("points") val points: Int
 )
+
+data class ProfileUpdateDto(val age: Int, val gender: String, val goal: String)

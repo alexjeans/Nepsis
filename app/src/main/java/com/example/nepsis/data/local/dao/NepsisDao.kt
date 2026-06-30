@@ -13,6 +13,9 @@ interface NepsisDao {
     @Query("SELECT * FROM profiles LIMIT 1")
     fun getProfile(): Flow<ProfileEntity?>
 
+    @Query("SELECT * FROM profiles WHERE id = :userId LIMIT 1")
+    fun getProfileByUserId(userId: String): Flow<ProfileEntity?>
+
     // Daily Moods
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDailyMood(mood: DailyMoodEntity): Long

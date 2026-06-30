@@ -12,11 +12,9 @@ import com.example.nepsis.data.local.dao.NepsisDao
         TestEntity::class,
         TestResultEntity::class
     ],
-    version = 1,
+    version = 2, // Incrementado debido a los nuevos campos en ProfileEntity
     exportSchema = false
 )
 abstract class NepsisDatabase : RoomDatabase() {
     abstract fun nepsisDao(): NepsisDao
 }
-
-

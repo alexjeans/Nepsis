@@ -82,22 +82,42 @@ fun UamBackground(
 @Composable
 fun ModernCard(
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = UamSurface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 7.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            content = content
-        )
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            modifier = modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = UamSurface
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 7.dp
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                content = content
+            )
+        }
+    } else {
+        Card(
+            modifier = modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = UamSurface
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 7.dp
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                content = content
+            )
+        }
     }
 }
 

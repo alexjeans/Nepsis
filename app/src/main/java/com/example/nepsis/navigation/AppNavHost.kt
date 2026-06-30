@@ -20,6 +20,7 @@ import com.example.nepsis.presentation.home.DailyCheckInScreen
 import com.example.nepsis.presentation.home.HomeScreen
 import com.example.nepsis.presentation.home.HomeViewModel
 import com.example.nepsis.presentation.home.HomeViewModelFactory
+import com.example.nepsis.presentation.login.LoginNavigationAction
 import com.example.nepsis.presentation.login.LoginScreen
 import com.example.nepsis.presentation.login.LoginViewModel
 import com.example.nepsis.presentation.login.LoginViewModelFactory
@@ -79,20 +80,22 @@ fun AppNavHost(
 
         composable(AppDestinations.Login.route) {
             val context = LocalContext.current
-            val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
-            val isOnboardingCompleted by userPrefs.isOnboardingCompleted.collectAsState(initial = false)
-
+            
             val loginViewModel: LoginViewModel = viewModel(
                 factory = LoginViewModelFactory(
                     repository = ServiceLocator.provideAuthRepository(),
-                    sessionManager = ServiceLocator.provideSessionManager(context)
+                    profileRepository = ServiceLocator.provideProfileRepository(context),
+                    sessionManager = ServiceLocator.provideSessionManager(context),
+                    userPreferences = ServiceLocator.provideUserPreferences(context),
+                    dao = ServiceLocator.provideDatabase(context).nepsisDao()
                 )
             )
             
             LoginScreen(
                 viewModel = loginViewModel,
                 onLoginSuccess = {
-                    if (isOnboardingCompleted) {
+                    val action = loginViewModel.state.value.navigationAction
+                    if (action == LoginNavigationAction.GO_TO_HOME) {
                         navController.navigate(AppDestinations.Home.route) {
                             popUpTo(AppDestinations.Login.route) { inclusive = true }
                         }
@@ -109,11 +112,13 @@ fun AppNavHost(
             val context = LocalContext.current
             val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
             val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
+            val profileRepo = remember { ServiceLocator.provideProfileRepository(context) }
+            val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
             
             val factory = object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return OnboardingViewModel(userPrefs, dao) as T
+                    return OnboardingViewModel(userPrefs, dao, profileRepo, sessionManager) as T
                 }
             }
             val viewModel: OnboardingViewModel = viewModel(factory = factory)

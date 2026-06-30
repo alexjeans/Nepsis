@@ -1,66 +1,92 @@
 package com.example.nepsis.presentation.test
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.nepsis.ui.components.ModernCard
+import com.example.nepsis.ui.components.UamBackground
+import com.example.nepsis.ui.theme.UamTextSecondary
 
-// Modelo temporal para la interfaz
-data class TestItem(val id: String, val title: String, val description: String, val duration: String)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestScreen(
     onNavigateToDetail: (String) -> Unit
 ) {
-    val tests = listOf(
-        TestItem("vocacional_1", "Test Vocacional", "Descubre tu perfil profesional y áreas de interés académico.", "10 min"),
-        TestItem("personalidad_1", "Test de Personalidad", "Conoce tus rasgos predominantes y estilo de trabajo.", "15 min"),
-        TestItem("estres_1", "Nivel de Estrés", "Evalúa tu carga actual y obtén recomendaciones de bienestar.", "5 min")
-    )
-
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Biblioteca de Tests", fontWeight = FontWeight.Bold) })
-        }
-    ) { paddingValues ->
-        LazyColumn(
+    UamBackground {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            items(tests) { test ->
-                Card(
-                    onClick = { onNavigateToDetail(test.id) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = test.title, 
-                            style = MaterialTheme.typography.titleMedium, 
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = test.description, 
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "⏱️ ${test.duration}", 
-                            style = MaterialTheme.typography.labelMedium, 
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
+            Text(
+                text = "Biblioteca de Tests",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = "Descubre más sobre ti realizando estas evaluaciones.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = UamTextSecondary
+            )
+
+            // 1. Test de Personalidad (ID corregido)
+            TestCard(
+                title = "Test de Personalidad (MBTI)",
+                category = "Psicología",
+                description = "Descubre tu tipo de personalidad y cómo interactúas con el mundo.",
+                onClick = { onNavigateToDetail("personalidad") } 
+            )
+
+            // 2. Lenguajes del Amor (ID corregido)
+            TestCard(
+                title = "Lenguajes del Amor",
+                category = "Relaciones",
+                description = "Identifica cómo prefieres dar y recibir aprecio.",
+                onClick = { onNavigateToDetail("lenguaje_amor") }
+            )
+
+            // 3. Test Vocacional (ID corregido)
+            TestCard(
+                title = "Test Vocacional",
+                category = "Desarrollo Personal",
+                description = "Descubre qué áreas profesionales se alinean mejor con tus habilidades.",
+                onClick = { onNavigateToDetail("vocacional") } 
+            )
+
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+    }
+}
+
+@Composable
+fun TestCard(title: String, category: String, description: String, onClick: () -> Unit) {
+    ModernCard(onClick = onClick) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Text(
+                text = category,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = UamTextSecondary
+            )
         }
     }
 }
