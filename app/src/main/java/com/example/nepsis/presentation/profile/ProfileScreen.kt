@@ -19,33 +19,35 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nepsis.core.di.ServiceLocator
+import com.example.nepsis.data.local.entity.TestResultEntity
 import com.example.nepsis.ui.components.ModernCard
 import com.example.nepsis.ui.components.UamBackground
 import com.example.nepsis.ui.theme.UamAccent
 import com.example.nepsis.ui.theme.UamPrimary
 import com.example.nepsis.ui.theme.UamPrimaryDark
 import com.example.nepsis.ui.theme.UamTextSecondary
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = viewModel(
-        factory = ProfileViewModelFactory(
-            repository = ServiceLocator.provideProfileRepository(LocalContext.current),
-            sessionManager = ServiceLocator.provideSessionManager(LocalContext.current)
-        )
-    ),
+    viewModel: ProfileViewModel,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToFullHistory: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val perfil = state.profile
+    val recentResults = state.recentResults
     
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     val iniciales = perfil?.fullName
         ?.trim()?.split(" ")?.mapNotNull { it.firstOrNull()?.uppercaseChar() }?.take(2)?.joinToString("") ?: "U"
+
+    // Detectar si los módulos están completados buscando en la lista real
+    val personalidadResult = recentResults.firstOrNull { it.testId == "personalidad" }
+    val lenguajeAmorResult = recentResults.firstOrNull { it.testId == "lenguaje_amor" }
 
     UamBackground {
         Column(
@@ -92,64 +94,86 @@ fun ProfileScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Chips de Información Dinámicos
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        perfil?.age?.let { siTieneEdad -> 
-                            if (siTieneEdad > 0) BadgeInfo(text = "$siTieneEdad años") 
-                        }
-                        
-                        perfil?.gender?.let { siTieneGenero ->
-                            if (siTieneGenero.isNotBlank()) BadgeInfo(text = siTieneGenero)
-                        }
+                        perfil?.age?.let { edad -> if (edad > 0) BadgeInfo(text = "$edad años") }
+                        perfil?.gender?.let { gen -> if (gen.isNotBlank()) BadgeInfo(text = gen) }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    
-                    perfil?.goal?.let { siTieneObjetivo ->
-                        if (siTieneObjetivo.isNotBlank()) {
-                            BadgeInfo(text = "Objetivo: $siTieneObjetivo", modifier = Modifier.fillMaxWidth())
-                        }
+                    perfil?.goal?.let { obj ->
+                        if (obj.isNotBlank()) BadgeInfo(text = "Objetivo: $obj", modifier = Modifier.fillMaxWidth())
                     }
                 }
             }
 
-            // 2. MÓDULOS DE TESTS
+            // 2. MÓDULOS DE TESTS REALES
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Tus Módulos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 
-                // Módulo completado (Simulado)
                 ModuleCard(
                     title = "Personalidad (MBTI)",
-                    statusText = "Arquitecto (INTJ)",
-                    isCompleted = true,
-                    onClick = { /* TODO: Ver detalle */ }
+                    statusText = personalidadResult?.resultText ?: "No encontrado",
+                    isCompleted = personalidadResult != null,
+                    onClick = { }
                 )
                 
-                // Módulo pendiente (Simulado)
                 ModuleCard(
                     title = "Lenguaje del Amor",
-                    statusText = "No encontrado",
-                    isCompleted = false,
-                    onClick = { /* TODO: Ir a test */ }
+                    statusText = lenguajeAmorResult?.resultText ?: "No encontrado",
+                    isCompleted = lenguajeAmorResult != null,
+                    onClick = { }
                 )
             }
 
-            // 3. HISTORIAL INTEGRADO
+            // 3. SECCIÓN DE HISTORIAL RECIENTE REDISEÑADO
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Historial Reciente", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 
-                // Elemento de historial simulado
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Test Vocacional", fontWeight = FontWeight.Bold)
-                        Text("Perfil: Ingeniería y Tecnología", style = MaterialTheme.typography.bodyMedium)
-                        Text("Hace 2 días", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                if (recentResults.isEmpty()) {
+                    Text(
+                        text = "No hay intentos registrados.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = UamTextSecondary,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                } else {
+                    // Mostrar los últimos 3 intentos realizados
+                    recentResults.take(3).forEach { result ->
+                        val testTitle = when (result.testId) {
+                            "personalidad" -> "Test de Personalidad (MBTI)"
+                            "lenguaje_amor" -> "Lenguajes del Amor"
+                            else -> "Test Vocacional"
+                        }
+                        val dateStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(result.createdAt))
+
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(testTitle, fontWeight = FontWeight.Bold)
+                                    Text(dateStr, style = MaterialTheme.typography.labelSmall, color = UamTextSecondary)
+                                }
+                                Text("Resultado: ${result.resultText}", style = MaterialTheme.typography.bodyMedium)
+                                Text("Puntuación: ${result.totalScore}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    OutlinedButton(
+                        onClick = onNavigateToFullHistory,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Ver historial completo")
                     }
                 }
             }
@@ -181,11 +205,10 @@ fun ProfileScreen(
                 }
             }
             
-            Spacer(modifier = Modifier.height(80.dp)) // Espacio para la BottomBar
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 
-    // Diálogo de confirmación para cerrar sesión
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },

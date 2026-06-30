@@ -14,6 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.nepsis.core.di.ServiceLocator
 import com.example.nepsis.presentation.history.HistoryScreen
+import com.example.nepsis.presentation.history.HistoryViewModel
+import com.example.nepsis.presentation.history.HistoryViewModelFactory
 import com.example.nepsis.presentation.home.DailyCheckInScreen
 import com.example.nepsis.presentation.home.HomeScreen
 import com.example.nepsis.presentation.home.HomeViewModel
@@ -153,7 +155,15 @@ fun AppNavHost(
         }
 
         composable(AppDestinations.History.route) {
-            HistoryScreen()
+            val context = LocalContext.current
+            val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
+            val historyViewModel: HistoryViewModel = viewModel(
+                factory = HistoryViewModelFactory(dao)
+            )
+            HistoryScreen(
+                viewModel = historyViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(AppDestinations.Profile.route) {
@@ -166,12 +176,14 @@ fun AppNavHost(
             val profileViewModel: com.example.nepsis.presentation.profile.ProfileViewModel = viewModel(
                 factory = com.example.nepsis.presentation.profile.ProfileViewModelFactory(
                     repository = ServiceLocator.provideProfileRepository(context),
-                    sessionManager = sessionManager
+                    sessionManager = sessionManager,
+                    dao = database.nepsisDao()
                 )
             )
             ProfileScreen(
                 viewModel = profileViewModel,
                 onNavigateToSettings = { navController.navigate(AppDestinations.Settings.route) },
+                onNavigateToFullHistory = { navController.navigate(AppDestinations.History.route) },
                 onLogout = {
                     coroutineScope.launch {
                         sessionManager.clearSession()
