@@ -3,8 +3,10 @@ package com.example.nepsis.presentation.test
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -16,17 +18,15 @@ fun TestDetailScreen(
     onNavigateBack: () -> Unit,
     onStartTest: (String) -> Unit
 ) {
-    // Datos simulados según el ID seleccionado
-    val title = if (testId == "vocacional_1") "Test Vocacional" else "Evaluación Nepsis"
-    val description = "Este test te ayudará a descubrir tu perfil y obtener recomendaciones personalizadas basadas en tus respuestas. Asegúrate de contestar con honestidad."
+    val testInfo = TestProvider.getTestInfo(testId)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detalle del Test") },
+                title = { Text(testInfo.category) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
                 }
             )
@@ -41,26 +41,32 @@ fun TestDetailScreen(
         ) {
             Column {
                 Text(
-                    text = title,
+                    text = testInfo.title,
                     style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Timer, contentDescription = "Duración", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = testInfo.duration, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Text(
+                    text = "Introducción",
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = testInfo.description,
+                    style = MaterialTheme.typography.bodyLarge
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                ) {
-                    Text(
-                        text = "⏱️ Duración estimada: 10 - 15 min",
-                        modifier = Modifier.padding(12.dp),
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
             }
 
             Button(

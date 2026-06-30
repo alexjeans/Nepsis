@@ -1,6 +1,32 @@
 package com.example.nepsis.presentation.test
 
+data class TestInfo(val title: String, val category: String, val description: String, val duration: String)
+
 object TestProvider {
+
+    fun getTestInfo(testId: String): TestInfo {
+        return when (testId) {
+            "personalidad" -> TestInfo(
+                title = "Test de Personalidad (MBTI)",
+                category = "Psicología",
+                description = "Descubre tu tipo de personalidad y cómo interactúas con el mundo. Este cuestionario evalúa tus preferencias entre la introversión, extroversión, lógica y emociones.",
+                duration = "5 min"
+            )
+            "lenguaje_amor" -> TestInfo(
+                title = "Lenguajes del Amor",
+                category = "Relaciones",
+                description = "Identifica cómo prefieres dar y recibir aprecio. Basado en los 5 lenguajes: Palabras de afirmación, Tiempo de calidad, Regalos, Actos de servicio y Contacto físico.",
+                duration = "3 min"
+            )
+            else -> TestInfo(
+                title = "Test Vocacional",
+                category = "Desarrollo Personal",
+                description = "Descubre qué áreas profesionales (Tecnología, Humanidades, Artes) se alinean mejor con tus habilidades naturales y pasatiempos.",
+                duration = "4 min"
+            )
+        }
+    }
+
     fun getQuestions(testId: String): List<Question> {
         return when (testId) {
             "personalidad" -> listOf(
