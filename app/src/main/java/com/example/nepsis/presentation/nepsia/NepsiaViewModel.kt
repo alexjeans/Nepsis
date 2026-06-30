@@ -69,7 +69,7 @@ class NepsiaViewModel(
             """.trimIndent()
 
             val generativeModel = GenerativeModel(
-                modelName = "gemini-1.5-flash",
+                modelName = "gemini-2.5-flash-lite",
                 apiKey = GEMINI_API_KEY,
                 systemInstruction = content { text(systemInstruction) }
             )
@@ -102,21 +102,24 @@ class NepsiaViewModel(
             isTyping = true
         )
         
-        // 3. LLAMADA REAL A GEMINI
         viewModelScope.launch {
             try {
                 val response = chatSession?.sendMessage(text)
-                val aiResponseText = response?.text ?: "Lo siento, tuve un problema procesando eso."
+                val aiResponseText = response?.text ?: "Nepsia está un poco cansada, intenta de nuevo en un momento."
                 
-                val aiMsg = ChatMessage(text = aiResponseText, isFromUser = false)
                 _state.value = _state.value.copy(
-                    messages = _state.value.messages + aiMsg,
+                    messages = _state.value.messages + ChatMessage(text = aiResponseText, isFromUser = false),
                     isTyping = false
                 )
             } catch (e: Exception) {
-                val errorMsg = ChatMessage(text = "Error de conexión con Nepsia. Revisa tu internet.", isFromUser = false)
+                // AQUÍ MANEJAMOS EL 503 y otros errores
+                val errorMessage = when {
+                    e.message?.contains("503") == true -> "Nepsia está recibiendo muchas consultas ahora mismo. Dame un segundo e intenta de nuevo."
+                    else -> "Error: ${e.localizedMessage}"
+                }
+                
                 _state.value = _state.value.copy(
-                    messages = _state.value.messages + errorMsg,
+                    messages = _state.value.messages + ChatMessage(text = errorMessage, isFromUser = false),
                     isTyping = false
                 )
             }
