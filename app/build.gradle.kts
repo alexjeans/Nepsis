@@ -31,10 +31,12 @@ android {
         val supabaseUrl = properties.getProperty("SUPABASE_URL") ?: ""
         val supabaseAnonKey = properties.getProperty("SUPABASE_ANON_KEY") ?: ""
         val googleWebClientId = properties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
+        val geminiApiKey = properties.getProperty("GEMINI_API_KEY") ?: ""
         
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
@@ -112,4 +114,7 @@ dependencies {
     // Coil para imágenes y Gson
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Gemini AI
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 }

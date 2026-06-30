@@ -25,4 +25,7 @@ sealed class AppDestinations(val route: String) {
     }
     
     object Settings : AppDestinations("settings")
+
+    // Nepsia Chat
+    object NepsiaChat : AppDestinations("nepsia_chat")
 }

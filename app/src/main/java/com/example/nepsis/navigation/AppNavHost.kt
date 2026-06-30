@@ -38,6 +38,9 @@ import kotlinx.coroutines.withContext
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import com.example.nepsis.presentation.settings.SettingsScreen
+import com.example.nepsis.presentation.nepsia.NepsiaChatScreen
+import com.example.nepsis.presentation.nepsia.NepsiaViewModel
+import com.example.nepsis.presentation.nepsia.NepsiaViewModelFactory
 
 @Composable
 fun AppNavHost(
@@ -145,6 +148,7 @@ fun AppNavHost(
 
             HomeScreen(
                 viewModel = homeViewModel,
+                navController = navController,
                 onNavigateToDailyCheckIn = {
                     navController.navigate(AppDestinations.DailyCheckIn.route)
                 }
@@ -153,6 +157,7 @@ fun AppNavHost(
 
         composable(AppDestinations.TestLibrary.route) {
             TestScreen(
+                navController = navController,
                 onNavigateToDetail = { testId ->
                     navController.navigate(AppDestinations.TestDetail.createRoute(testId))
                 }
@@ -187,6 +192,7 @@ fun AppNavHost(
             )
             ProfileScreen(
                 viewModel = profileViewModel,
+                navController = navController,
                 onNavigateToTest = { testId -> 
                     // CONECTA LOS MÓDULOS CON LOS TESTS
                     navController.navigate(AppDestinations.TestDetail.createRoute(testId))
@@ -296,6 +302,29 @@ fun AppNavHost(
                 onNavigateHome = {
                     navController.navigate(AppDestinations.Home.route) {
                         popUpTo(AppDestinations.Home.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(AppDestinations.NepsiaChat.route) {
+            val context = LocalContext.current
+            val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
+            val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
+            
+            val nepsiaViewModel: NepsiaViewModel = viewModel(
+                factory = NepsiaViewModelFactory(dao, sessionManager)
+            )
+            
+            NepsiaChatScreen(
+                viewModel = nepsiaViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToRoute = { route ->
+                    when (route) {
+                        "test_detail/personalidad" -> navController.navigate(AppDestinations.TestDetail.createRoute("personalidad"))
+                        "test_detail/vocacional" -> navController.navigate(AppDestinations.TestDetail.createRoute("vocacional"))
+                        "daily_checkin" -> navController.navigate(AppDestinations.DailyCheckIn.route)
+                        "history" -> navController.navigate(AppDestinations.History.route)
                     }
                 }
             )
