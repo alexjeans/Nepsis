@@ -151,13 +151,26 @@ fun AppNavHost(
 
         composable(AppDestinations.Profile.route) {
             val context = LocalContext.current
+            val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
             val profileViewModel: com.example.nepsis.presentation.profile.ProfileViewModel = viewModel(
                 factory = com.example.nepsis.presentation.profile.ProfileViewModelFactory(
                     repository = ServiceLocator.provideProfileRepository(context),
-                    sessionManager = ServiceLocator.provideSessionManager(context)
+                    sessionManager = sessionManager
                 )
             )
-            ProfileScreen(viewModel = profileViewModel)
+            
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onLogout = {
+                    // Limpiamos los datos del usuario localmente
+                    sessionManager.clearSession()
+                    
+                    // Navegamos al Login y destruimos la pila de pantallas anterior
+                    navController.navigate(AppDestinations.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // --- 3. SUB-FLOWS (PANTALLA COMPLETA) ---
