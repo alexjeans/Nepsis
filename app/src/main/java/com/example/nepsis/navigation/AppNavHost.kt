@@ -21,6 +21,7 @@ import com.example.nepsis.presentation.login.LoginScreen
 import com.example.nepsis.presentation.login.LoginViewModel
 import com.example.nepsis.presentation.login.LoginViewModelFactory
 import com.example.nepsis.presentation.profile.ProfileScreen
+import com.example.nepsis.presentation.result.ResultScreen
 import com.example.nepsis.presentation.test.TestDetailScreen
 import com.example.nepsis.presentation.test.TestQuestionsScreen
 import com.example.nepsis.presentation.test.TestScreen
@@ -173,7 +174,16 @@ fun AppNavHost(
         ) { backStackEntry ->
             val score = backStackEntry.arguments?.getInt("score") ?: 0
             val text = backStackEntry.arguments?.getString("resultText") ?: ""
-            Text(text = "Resultado: $text - Puntuación: $score")
+            
+            ResultScreen(
+                score = score,
+                resultText = text,
+                onNavigateHome = {
+                    navController.navigate(AppDestinations.Home.route) {
+                        popUpTo(AppDestinations.Home.route) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

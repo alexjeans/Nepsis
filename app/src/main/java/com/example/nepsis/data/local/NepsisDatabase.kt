@@ -18,3 +18,5 @@ import com.example.nepsis.data.local.dao.NepsisDao
 abstract class NepsisDatabase : RoomDatabase() {
     abstract fun nepsisDao(): NepsisDao
 }
+
+

@@ -4,18 +4,20 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nepsis.BuildConfig
-import com.example.nepsis.core.di.ServiceLocator
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
@@ -24,13 +26,14 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel
-)
-{
+) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Navegar automáticamente cuando el authData no es nulo
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
     LaunchedEffect(state.authData) {
         if (state.authData != null) {
             onLoginSuccess()
@@ -38,33 +41,75 @@ fun LoginScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Bienvenido a Nepsis", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "Bienvenido a Nepsis", 
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
         
         Spacer(modifier = Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Correo electrónico") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Contraseña") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         if (state.isLoading) {
             CircularProgressIndicator()
         } else {
-            Button(onClick = {
-                // Extraemos el Activity de forma segura
-                val activityContext = context.findActivity()
-                if (activityContext != null) {
-                    coroutineScope.launch {
-                        launchGoogleLogin(activityContext) { idToken ->
-                            if (idToken != null) {
-                                viewModel.loginWithSupabase(idToken)
-                            } else {
-                                // Opcional: Manejar si el token es null (ej. el usuario canceló)
+            Button(
+                onClick = { /* TODO: Lógica de correo/contraseña futura */ },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Text("Iniciar sesión", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text("o", style = MaterialTheme.typography.bodyMedium)
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = {
+                    val activityContext = context.findActivity()
+                    if (activityContext != null) {
+                        coroutineScope.launch {
+                            launchGoogleLogin(activityContext) { idToken ->
+                                if (idToken != null) {
+                                    viewModel.loginWithSupabase(idToken)
+                                }
                             }
                         }
                     }
-                }
-            }) {
-                Text("Iniciar sesión con Google")
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Text("Continuar con Google")
             }
         }
 
@@ -102,7 +147,6 @@ private suspend fun launchGoogleLogin(context: Context, onResult: (String?) -> U
     }
 }
 
-// Busca recursivamente el Activity subyacente
 fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
