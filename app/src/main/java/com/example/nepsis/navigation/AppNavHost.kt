@@ -27,6 +27,11 @@ import com.example.nepsis.presentation.profile.ProfileScreen
 import com.example.nepsis.presentation.test.TestDetailScreen
 import com.example.nepsis.presentation.test.TestQuestionsScreen
 import com.example.nepsis.presentation.test.TestScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
 import com.example.nepsis.presentation.settings.SettingsScreen
 
 @Composable
@@ -45,7 +50,6 @@ fun AppNavHost(
             val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
             val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
             
-            // Recolectamos el estado, initial=null para esperar que DataStore lea el disco
             val isOnboardingCompleted by userPrefs.isOnboardingCompleted.collectAsState(initial = null)
             
             LaunchedEffect(isOnboardingCompleted) {
@@ -101,7 +105,6 @@ fun AppNavHost(
             val context = LocalContext.current
             val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
             
-            // Inyección manual del ViewModel
             val factory = object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -114,7 +117,7 @@ fun AppNavHost(
                 viewModel = viewModel,
                 onNavigateToHome = {
                     navController.navigate(AppDestinations.Home.route) {
-                        popUpTo(0) { inclusive = true } // Limpiamos todo para que no vuelva atrás
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )
@@ -153,23 +156,46 @@ fun AppNavHost(
         composable(AppDestinations.Profile.route) {
             val context = LocalContext.current
             val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
+            val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
+            val database = remember { ServiceLocator.provideDatabase(context) }
+            val coroutineScope = rememberCoroutineScope()
+            
             val profileViewModel: com.example.nepsis.presentation.profile.ProfileViewModel = viewModel(
                 factory = com.example.nepsis.presentation.profile.ProfileViewModelFactory(
                     repository = ServiceLocator.provideProfileRepository(context),
                     sessionManager = sessionManager
                 )
             )
-            
             ProfileScreen(
                 viewModel = profileViewModel,
                 onNavigateToSettings = { navController.navigate(AppDestinations.Settings.route) },
                 onLogout = {
-                    // Limpiamos los datos del usuario localmente
-                    sessionManager.clearSession()
-                    
-                    // Navegamos al Login y destruimos la pila de pantallas anterior
-                    navController.navigate(AppDestinations.Login.route) {
-                        popUpTo(0) { inclusive = true }
+                    coroutineScope.launch {
+                        // 1. Limpiar credenciales de sesión locales (SharedPreferences)
+                        sessionManager.clearSession()
+                        
+                        // 2. Limpiar Base de Datos local por completo (Room) en un hilo secundario
+                        withContext(Dispatchers.IO) {
+                            database.clearAllTables()
+                        }
+                        
+                        // 3. Resetear el estado del Onboarding (DataStore)
+                        userPrefs.saveOnboardingCompleted(false)
+                        
+                        // 4. Forzar el cierre de sesión de Google en el dispositivo
+                        try {
+                            val credentialManager = CredentialManager.create(context)
+                            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        
+                        // 5. Redirección limpia al Login sin historial previo
+                        withContext(Dispatchers.Main) {
+                            navController.navigate(AppDestinations.Login.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
                     }
                 }
             )
