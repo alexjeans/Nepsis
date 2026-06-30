@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.nepsis.core.network.RetrofitClient
 import com.example.nepsis.core.utils.SessionManager
+import com.example.nepsis.core.utils.UserPreferences
 import com.example.nepsis.data.local.NepsisDatabase
 import com.example.nepsis.data.repository.AuthRepositoryImpl
 import com.example.nepsis.data.repository.NepsisRepositoryImpl
@@ -15,6 +16,15 @@ import com.example.nepsis.domain.repository.ProfileRepository
 object ServiceLocator {
     private var database: NepsisDatabase? = null
     private var sessionManager: SessionManager? = null
+    private var userPreferences: UserPreferences? = null
+
+    fun provideUserPreferences(context: Context): UserPreferences {
+        return userPreferences ?: synchronized(this) {
+            val instance = UserPreferences(context.applicationContext)
+            userPreferences = instance
+            instance
+        }
+    }
 
     fun provideSessionManager(context: Context): SessionManager {
         return sessionManager ?: synchronized(this) {

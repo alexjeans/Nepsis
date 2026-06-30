@@ -4,6 +4,7 @@ sealed class AppDestinations(val route: String) {
     // Auth Flow
     object Splash : AppDestinations("splash")
     object Login : AppDestinations("login")
+    object Onboarding : AppDestinations("onboarding")
     
     // Main Flow (Bottom Nav)
     object Home : AppDestinations("home")
