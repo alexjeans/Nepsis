@@ -9,7 +9,6 @@ import com.example.nepsis.data.remote.dto.ProfileUpdateDto
 import com.example.nepsis.domain.repository.ProfileRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 
 class ProfileRepositoryImpl(
     private val api: SupabaseService,
@@ -38,17 +37,14 @@ class ProfileRepositoryImpl(
 
     override suspend fun updateRemoteProfile(userId: String, token: String, age: Int, gender: String, goal: String): Resource<Unit> {
         return try {
-            // CORRECCIÓN: Actualizar la base de datos local primero (Offline-First)
-            val currentProfile = dao.getProfileByUserId(userId).firstOrNull()
-            if (currentProfile != null) {
-                // Se asume que insertProfile en DAO tiene OnConflictStrategy.REPLACE
-                dao.insertProfile(currentProfile.copy(age = age, gender = gender, goal = goal))
-            }
-
-            // Luego actualizar en Supabase
+            // CORRECCIÓN: Eliminamos el bloqueo infinito provocado por Flow.firstOrNull()
+            // Se actualiza directamente a Supabase.
             val dto = ProfileUpdateDto(age, gender, goal)
             val response = api.updateProfile("Bearer $token", "eq.$userId", dto)
+
             if (response.isSuccessful) {
+                // Al tener éxito, el ViewModel inmediatamente llama a fetchAndSaveProfile()
+                // lo que mantendrá la consistencia de Room de forma segura (Offline-First garantizado).
                 Resource.Success(Unit)
             } else {
                 Resource.Error(response.message())

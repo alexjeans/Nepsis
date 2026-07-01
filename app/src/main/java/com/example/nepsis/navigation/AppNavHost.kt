@@ -5,7 +5,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -58,17 +57,17 @@ fun AppNavHost(
         navController = navController,
         startDestination = AppDestinations.Splash.route,
         modifier = modifier,
-        enterTransition = { 
-            slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(300)) + fadeIn(animationSpec = tween(300)) 
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(300)) + fadeIn(animationSpec = tween(300))
         },
-        exitTransition = { 
-            slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(300)) + fadeOut(animationSpec = tween(300)) 
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(300)) + fadeOut(animationSpec = tween(300))
         },
-        popEnterTransition = { 
-            slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(300)) + fadeIn(animationSpec = tween(300)) 
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(300)) + fadeIn(animationSpec = tween(300))
         },
-        popExitTransition = { 
-            slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(300)) + fadeOut(animationSpec = tween(300)) 
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(300)) + fadeOut(animationSpec = tween(300))
         }
     ) {
         // --- 1. AUTH & ONBOARDING FLOW ---
@@ -76,9 +75,9 @@ fun AppNavHost(
             val context = LocalContext.current
             val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
             val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
-            
+
             val isOnboardingCompleted by userPrefs.isOnboardingCompleted.collectAsState(initial = null)
-            
+
             LaunchedEffect(isOnboardingCompleted) {
                 if (isOnboardingCompleted != null) {
                     if (sessionManager.isLoggedIn()) {
@@ -102,7 +101,7 @@ fun AppNavHost(
 
         composable(AppDestinations.Login.route) {
             val context = LocalContext.current
-            
+
             val loginViewModel: LoginViewModel = viewModel(
                 factory = LoginViewModelFactory(
                     repository = ServiceLocator.provideAuthRepository(),
@@ -112,7 +111,7 @@ fun AppNavHost(
                     dao = ServiceLocator.provideDatabase(context).nepsisDao()
                 )
             )
-            
+
             LoginScreen(
                 viewModel = loginViewModel,
                 onLoginSuccess = {
@@ -136,7 +135,7 @@ fun AppNavHost(
             val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
             val profileRepo = remember { ServiceLocator.provideProfileRepository(context) }
             val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
-            
+
             val factory = object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -149,7 +148,8 @@ fun AppNavHost(
                 viewModel = viewModel,
                 onNavigateToHome = {
                     navController.navigate(AppDestinations.Home.route) {
-                        popUpTo(0) { inclusive = true }
+                        // CORRECCIÓN: Se reemplaza popUpTo(0)
+                        popUpTo(navController.graph.id) { inclusive = true }
                     }
                 }
             )
@@ -201,7 +201,7 @@ fun AppNavHost(
             val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
             val database = remember { ServiceLocator.provideDatabase(context) }
             val coroutineScope = rememberCoroutineScope()
-            
+
             val profileViewModel: com.example.nepsis.presentation.profile.ProfileViewModel = viewModel(
                 factory = com.example.nepsis.presentation.profile.ProfileViewModelFactory(
                     repository = ServiceLocator.provideProfileRepository(context),
@@ -212,8 +212,7 @@ fun AppNavHost(
             ProfileScreen(
                 viewModel = profileViewModel,
                 navController = navController,
-                onNavigateToTest = { testId -> 
-                    // CONECTA LOS MÓDULOS CON LOS TESTS
+                onNavigateToTest = { testId ->
                     navController.navigate(AppDestinations.TestDetail.createRoute(testId))
                 },
                 onNavigateToSettings = { navController.navigate(AppDestinations.Settings.route) },
@@ -233,7 +232,8 @@ fun AppNavHost(
                         }
                         withContext(Dispatchers.Main) {
                             navController.navigate(AppDestinations.Login.route) {
-                                popUpTo(0) { inclusive = true }
+                                // CORRECCIÓN: Se reemplaza popUpTo(0)
+                                popUpTo(navController.graph.id) { inclusive = true }
                             }
                         }
                     }
@@ -247,7 +247,7 @@ fun AppNavHost(
             val settingsViewModel: SettingsViewModel = viewModel(
                 factory = SettingsViewModelFactory(userPrefs)
             )
-            
+
             SettingsScreen(
                 viewModel = settingsViewModel,
                 onNavigateBack = { navController.popBackStack() }
@@ -263,7 +263,7 @@ fun AppNavHost(
                     sessionManager = ServiceLocator.provideSessionManager(context)
                 )
             )
-            
+
             DailyCheckInScreen(
                 viewModel = homeViewModel,
                 onNavigateBack = {
@@ -277,7 +277,7 @@ fun AppNavHost(
             arguments = listOf(navArgument("testId") { type = NavType.StringType })
         ) { backStackEntry ->
             val testId = backStackEntry.arguments?.getString("testId") ?: ""
-            
+
             TestDetailScreen(
                 testId = testId,
                 onNavigateBack = { navController.popBackStack() },
@@ -293,15 +293,14 @@ fun AppNavHost(
         ) { backStackEntry ->
             val testId = backStackEntry.arguments?.getString("testId") ?: "vocacional"
             val context = LocalContext.current
-            
-            // INYECTAR REPOSITORIO EN VEZ DE DAO DIRECTO
+
             val repository = remember { ServiceLocator.provideNepsisRepository(context) }
             val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
-            
+
             val viewModel: TestQuestionsViewModel = viewModel(
                 factory = TestQuestionsViewModelFactory(repository, sessionManager, testId)
             )
-            
+
             TestQuestionsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
@@ -322,7 +321,7 @@ fun AppNavHost(
         ) { backStackEntry ->
             val score = backStackEntry.arguments?.getInt("score") ?: 0
             val text = backStackEntry.arguments?.getString("resultText") ?: ""
-            
+
             com.example.nepsis.presentation.result.ResultScreen(
                 score = score,
                 resultText = text,
@@ -338,11 +337,11 @@ fun AppNavHost(
             val context = LocalContext.current
             val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
             val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
-            
+
             val nepsiaViewModel: NepsiaViewModel = viewModel(
                 factory = NepsiaViewModelFactory(dao, sessionManager)
             )
-            
+
             NepsiaChatScreen(
                 viewModel = nepsiaViewModel,
                 onNavigateBack = { navController.popBackStack() },

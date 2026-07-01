@@ -1,28 +1,22 @@
 package com.example.nepsis.presentation.onboarding
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.nepsis.R
 import kotlinx.coroutines.launch
-
-// IMPORTACIONES NECESARIAS PARA SOLUCIONAR TUS ERRORES:
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -32,25 +26,18 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Obtenemos el estado de la UI desde el ViewModel
+    // CORRECCIÓN: Escuchamos el estado real del ViewModel
     val uiState by viewModel.uiState.collectAsState()
 
-    // Reaccionamos a los cambios de estado
+    // CORRECCIÓN: Reaccionamos al estado Success para navegar
     LaunchedEffect(uiState) {
-        when (uiState) {
-            is OnboardingState.Success -> onNavigateToHome()
-            is OnboardingState.Error -> {
-                snackbarHostState.showSnackbar((uiState as OnboardingState.Error).message)
-            }
-            else -> {}
+        if (uiState is OnboardingState.Success) {
+            onNavigateToHome()
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -69,6 +56,17 @@ fun OnboardingScreen(
                 }
             }
 
+            // Mostrar Mensaje de Error si ocurre
+            if (uiState is OnboardingState.Error) {
+                Text(
+                    text = (uiState as OnboardingState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,6 +79,9 @@ fun OnboardingScreen(
                 val genderState by viewModel.gender.collectAsState()
                 val goalState by viewModel.goal.collectAsState()
 
+                // Variable para saber si está cargando
+                val isLoading = uiState is OnboardingState.Loading
+
                 val isPageValid = when (pagerState.currentPage) {
                     0 -> true
                     1 -> nameState.isNotBlank() && ageState.isNotBlank() && genderState.isNotBlank()
@@ -90,11 +91,14 @@ fun OnboardingScreen(
                 }
 
                 if (pagerState.currentPage in 1..2) {
-                    TextButton(onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                    TextButton(
+                        enabled = !isLoading,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            }
                         }
-                    }) {
+                    ) {
                         Text("Atrás")
                     }
                 } else {
@@ -102,7 +106,7 @@ fun OnboardingScreen(
                 }
 
                 Button(
-                    enabled = isPageValid && uiState !is OnboardingState.Loading,
+                    enabled = isPageValid && !isLoading, // Bloquea múltiples clicks
                     onClick = {
                         coroutineScope.launch {
                             if (pagerState.currentPage < 3) {
@@ -113,7 +117,8 @@ fun OnboardingScreen(
                         }
                     }
                 ) {
-                    if (uiState is OnboardingState.Loading && pagerState.currentPage == 3) {
+                    // Feedback visual mientras guarda en Supabase
+                    if (isLoading && pagerState.currentPage == 3) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -131,7 +136,12 @@ fun OnboardingScreen(
 @Composable
 fun WelcomePage() {
     Column(modifier = Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Image(painter = painterResource(id = R.drawable.ic_launcher_foreground), contentDescription = "Logo", modifier = Modifier.size(100.dp))
+        Icon(
+            imageVector = Icons.Filled.AccountCircle,
+            contentDescription = "Logo",
+            modifier = Modifier.size(100.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
         Spacer(modifier = Modifier.height(24.dp))
         Text("Bienvenido a Nepsis", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
     }

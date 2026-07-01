@@ -40,7 +40,9 @@ object ServiceLocator {
                 context.applicationContext,
                 NepsisDatabase::class.java,
                 "nepsis_db"
-            ).build()
+            )
+            .fallbackToDestructiveMigration() // SOLUCIÓN: Permite recrear la BD al cambiar de versión
+            .build()
             database = instance
             instance
         }
