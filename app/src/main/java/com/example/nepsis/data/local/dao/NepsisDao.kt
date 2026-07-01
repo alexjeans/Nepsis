@@ -5,7 +5,7 @@ import com.example.nepsis.data.local.entity.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface NepsisDao {
+public interface NepsisDao {
     // Perfil
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProfile(profile: ProfileEntity): Long
@@ -42,10 +42,10 @@ interface NepsisDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTestResult(result: TestResultEntity): Long
 
-    @Query("SELECT * FROM test_results ORDER BY createdAt DESC")
+    @Query("SELECT * FROM test_results ORDER BY date DESC")
     fun getAllTestResults(): Flow<List<TestResultEntity>>
 
-    @Query("SELECT * FROM test_results WHERE userId = :userId ORDER BY createdAt DESC")
+    @Query("SELECT * FROM test_results WHERE userId = :userId ORDER BY date DESC")
     fun getTestResultsByUserId(userId: String): Flow<List<TestResultEntity>>
 
     @Query("SELECT * FROM test_results WHERE isSynced = 0")

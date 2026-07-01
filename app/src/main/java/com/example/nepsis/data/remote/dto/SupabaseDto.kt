@@ -28,9 +28,10 @@ data class DailyMoodDto(
 
 data class TestDto(
     @SerializedName("id") val id: String,
+    @SerializedName("category") val category: String?,
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String?,
-    @SerializedName("questions_json") val questionsJson: Any
+    @SerializedName("questions_json") val questionsJson: Any? // Recibe el JSON de Supabase
 )
 
 data class TestResultDto(
@@ -39,12 +40,12 @@ data class TestResultDto(
     @SerializedName("test_id") val testId: String,
     @SerializedName("total_score") val totalScore: Int,
     @SerializedName("result_text") val resultText: String,
-    @SerializedName("answers_json") val answersJson: String
+    @SerializedName("answers_json") val answersJson: String?
 )
 
 data class ProfileDto(
     @SerializedName("id") val id: String,
-    @SerializedName("email") val email: String,
+    @SerializedName("email") val email: String?, // Crucial que sea nullable (?)
     @SerializedName("full_name") val fullName: String?,
     @SerializedName("avatar_url") val avatarUrl: String?,
     @SerializedName("level") val level: Int,

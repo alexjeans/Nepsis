@@ -1,6 +1,11 @@
 package com.example.nepsis.data.mapper
 
-import com.example.nepsis.data.local.entity.*
+import com.example.nepsis.data.local.entity.DailyMoodEntity
+import com.example.nepsis.data.local.entity.ProfileEntity
+import com.example.nepsis.data.local.entity.TestEntity
+import com.example.nepsis.data.local.entity.TestResultEntity
+
+
 import com.example.nepsis.data.remote.dto.*
 import com.google.gson.Gson
 
@@ -23,13 +28,13 @@ fun DailyMoodDto.toEntity() = DailyMoodEntity(
     date = date,
     isSynced = true // Si viene de Supabase, ya está sincronizado
 )
-
 // --- Tests ---
 fun TestDto.toEntity() = TestEntity(
     id = id,
+    category = category ?: "General",
     title = title,
     description = description ?: "",
-    questionsJson = Gson().toJson(this.questionsJson)
+    questionsJson = com.google.gson.Gson().toJson(this.questionsJson ?: emptyList<Any>())
 )
 
 // --- Test Results ---
@@ -48,14 +53,14 @@ fun TestResultDto.toEntity() = TestResultEntity(
     testId = testId,
     totalScore = totalScore,
     resultText = resultText,
-    answersJson = answersJson,
+    answersJson = answersJson ?: "{}",
     isSynced = true
 )
 
 // --- Profile ---
 fun ProfileDto.toEntity() = ProfileEntity(
     id = id,
-    email = email,
+    email = email ?: "Sin correo",
     fullName = fullName ?: "Usuario",
     avatarUrl = avatarUrl,
     level = level,

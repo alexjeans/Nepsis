@@ -35,30 +35,28 @@ class ProfileViewModel(
     }
 
     private fun loadProfileAndHistory() {
+        _state.value = _state.value.copy(isLoading = true)
+
+        // Corrutina 1: Escuchar el perfil independientemente
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-            
             repository.getLocalProfile()
-                .catch { e ->
-                    _state.value = _state.value.copy(isLoading = false, error = e.message)
-                }
+                .catch { e -> _state.value = _state.value.copy(isLoading = false, error = e.message) }
                 .collect { profile ->
-                    _state.value = _state.value.copy(profile = profile)
-                    
-                    if (profile != null) {
-                        // Escuchar los resultados de test exclusivos de este usuario en tiempo real
-                        dao.getTestResultsByUserId(profile.id)
-                            .catch { e -> _state.value = _state.value.copy(error = e.message) }
-                            .collect { results ->
-                                _state.value = _state.value.copy(
-                                    isLoading = false,
-                                    recentResults = results
-                                )
-                            }
-                    } else {
-                        _state.value = _state.value.copy(isLoading = false)
-                    }
+                    _state.value = _state.value.copy(profile = profile, isLoading = false)
                 }
+        }
+
+        // Corrutina 2: Escuchar el historial independientemente
+        viewModelScope.launch {
+            repository.getLocalProfile().collect { profile ->
+                if (profile != null) {
+                    dao.getTestResultsByUserId(profile.id)
+                        .catch { e -> _state.value = _state.value.copy(error = e.message) }
+                        .collect { results ->
+                            _state.value = _state.value.copy(recentResults = results)
+                        }
+                }
+            }
         }
     }
 }

@@ -30,9 +30,10 @@ data class DailyMoodEntity(
 @Entity(tableName = "tests")
 data class TestEntity(
     @PrimaryKey val id: String,
+    val category: String, // Lo mantenemos porque está en tu SQL
     val title: String,
-    val description: String?,
-    val questionsJson: String // Guardamos el JSON crudo en Room
+    val description: String,
+    val questionsJson: String
 )
 
 @Entity(tableName = "test_results")
@@ -42,7 +43,8 @@ data class TestResultEntity(
     val testId: String,
     val totalScore: Int,
     val resultText: String,
-    val answersJson: String = "{}",
+    val answersJson: String,
     val createdAt: Long = System.currentTimeMillis(),
+    val date: String = java.time.LocalDate.now().toString(),
     val isSynced: Boolean = false
 )
