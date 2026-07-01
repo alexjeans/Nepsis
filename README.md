@@ -1,23 +1,26 @@
 # Nepsis
 
-Nepsis es una aplicación Android de autoconocimiento y bienestar emocional. Su objetivo es convertirse en un espacio donde el usuario pueda conocerse mejor mediante tests, historial estructurado y, a futuro, inteligencia artificial. Todo gira en torno a un "Súper Perfil" dinámico, manteniendo un diseño minimalista, intuitivo y sin mecánicas de gamificación.
+Nepsis es una aplicación Android de autoconocimiento y bienestar emocional. Su objetivo es convertirse en un espacio donde el usuario pueda conocerse mejor mediante tests, historial estructurado y asistencia por inteligencia artificial. Todo gira en torno a un "Súper Perfil" dinámico, manteniendo un diseño minimalista, intuitivo y sin mecánicas de gamificación.
 
 ## Tecnologías
 
 - Kotlin & Jetpack Compose
 - Clean Architecture (MVVM)
-- Room Database (Persistencia Local)
-- Retrofit & Supabase (Backend y Sincronización)
-- DataStore (Preferencias y Onboarding)
+- Room Database (Persistencia Local & Offline-First)
+- Retrofit & Supabase (Backend, BD Relacional y Sincronización)
+- DataStore (Preferencias, Onboarding y Modo Oscuro)
 - Credential Manager (Google Login)
-- Navigation Compose
+- Navigation Compose (Transiciones)
+- WorkManager (Notificaciones en segundo plano)
+- SDK Google Generative AI (Gemini 1.5 Flash)
 
 ## Cómo ejecutar
 
 1. Clonar el repositorio
-2. Abrir el proyecto en Android Studio
-3. Sincronizar Gradle
-4. Ejecutar la app en emulador o dispositivo Android
+2. Configurar el archivo `local.properties` con la variable `GEMINI_API_KEY=tu_api_key`
+3. Abrir el proyecto en Android Studio
+4. Sincronizar Gradle
+5. Ejecutar la app en emulador o dispositivo Android
 
 ## Roadmap
 
@@ -54,25 +57,26 @@ Nepsis es una aplicación Android de autoconocimiento y bienestar emocional. Su 
 ### Fase 3: UX y Diseño Moderno (En progreso)
 | Funcionalidad | Estado |
 |---|---|
-| Aislamiento de Daily Check-in por Usuario | ⏳ |
+| Aislamiento de Daily Check-in por Usuario | ✅ |
+| Transiciones suaves de navegación (Slide/Fade) | ✅ |
+| Tema Dinámico (Modo Oscuro global vía DataStore) | ✅ |
+| Notificaciones Locales Diarias (WorkManager) | ✅ |
 | Splash Screen Nativo y Launcher Icon | ⏳ |
 | Skeletons de carga (Efecto Shimmer) | ❌ |
-| Transiciones suaves entre pantallas | ❌ |
 | Pull to Refresh en Inicio/Perfil | ❌ |
 | Snackbars de feedback visual | ❌ |
 
-### Fase 4: Escalabilidad de Tests (Futuro)
+### Fase 4: Escalabilidad de Tests (Completado)
 | Funcionalidad | Estado |
 |---|---|
-| Estructura genérica JSON en Room | ❌ |
-| Arquitectura para nuevos tests (MBTI, etc.) | ❌ |
+| Estructura genérica JSON en Room | ✅ |
+| Arquitectura para descargar tests vía Supabase | ✅ |
 | Racha Diaria (Retención no gamificada) | ❌ |
 
-### Fase 5 y 6: Inteligencia Artificial y Nube (Visión a Largo Plazo)
+### Fase 5 y 6: Inteligencia Artificial y Nube (En progreso)
 | Funcionalidad | Estado |
 |---|---|
-| Análisis cruzado de resultados con IA | ❌ |
-| Recomendaciones personalizadas | ❌ |
-| Autenticación propia real (Supabase Auth) | ❌ |
-| Sincronización offline estricta | ❌ |
-| Exportación de perfil y datos (PDF/JSON) | ❌ |
+| Asistente IA Contextual (Gemini) en toda la app | ✅ |
+| Sincronización offline estricta (Patrón Repositorio) | ✅ |
+| Análisis cruzado profundo de resultados con IA | ⏳ |
+| Autenticación propia real (Supabase Auth) |
