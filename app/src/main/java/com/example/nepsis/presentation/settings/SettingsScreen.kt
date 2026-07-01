@@ -21,8 +21,10 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    viewModel: SettingsViewModel,
     onNavigateBack: () -> Unit
 ) {
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
@@ -41,7 +43,12 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState())
         ) {
             SettingsSectionTitle("Preferencias")
-            SettingsSwitchItem(icon = Icons.Default.ColorLens, title = "Modo Oscuro", isChecked = false, onCheckedChange = { /* Requiere DataStore + CompositionLocal en Fase 3 */ })
+            SettingsSwitchItem(
+                icon = Icons.Default.ColorLens, 
+                title = "Modo Oscuro", 
+                isChecked = isDarkMode, 
+                onCheckedChange = { viewModel.toggleDarkMode(it) }
+            )
             SettingsClickableItem(icon = Icons.Default.Language, title = "Idioma", subtitle = "Español", onClick = { })
             SettingsSwitchItem(icon = Icons.Default.Notifications, title = "Notificaciones Diarias", isChecked = true, onCheckedChange = { /* Implementación base para WorkManager a futuro */ })
 
@@ -92,8 +99,6 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(onClick = { 
                     showDeleteDialog = false 
-                    // Aquí en el futuro llamarás a: authRepository.deleteUserSupabase()
-                    // Y luego ejecutarás la limpieza local (onLogout)
                 }) {
                     Text("Borrar datos 😥", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                 }

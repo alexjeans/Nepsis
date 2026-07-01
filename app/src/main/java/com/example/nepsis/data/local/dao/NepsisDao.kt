@@ -31,7 +31,13 @@ interface NepsisDao {
 
     // Tests & Resultados
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTests(tests: List<TestEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTest(test: TestEntity): Long
+
+    @Query("SELECT * FROM tests WHERE id = :testId LIMIT 1")
+    fun getTestById(testId: String): Flow<TestEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTestResult(result: TestResultEntity): Long

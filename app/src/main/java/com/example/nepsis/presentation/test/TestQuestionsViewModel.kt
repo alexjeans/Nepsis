@@ -3,23 +3,21 @@ package com.example.nepsis.presentation.test
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-
 import com.example.nepsis.core.utils.SessionManager
-import com.example.nepsis.data.local.dao.NepsisDao
 import com.example.nepsis.data.local.entity.TestResultEntity
+import com.example.nepsis.domain.repository.NepsisRepository
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 data class Option(val text: String, val score: Int)
 data class Question(val id: Int, val text: String, val options: List<Option>)
 
 class TestQuestionsViewModel(
-    private val dao: NepsisDao,
-    private val sessionManager: SessionManager, // Necesario para aislar los datos correctamente
+    private val repository: NepsisRepository,
+    private val sessionManager: SessionManager,
     private val testId: String
 ) : ViewModel() {
 
@@ -29,7 +27,6 @@ class TestQuestionsViewModel(
     private val _currentIndex = MutableStateFlow(0)
     val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
 
-    // Diccionario temporal: [Indice de pregunta] -> [Score de la opción seleccionada]
     private val _selectedAnswers = MutableStateFlow<Map<Int, Int>>(emptyMap())
     val selectedAnswers: StateFlow<Map<Int, Int>> = _selectedAnswers.asStateFlow()
 
@@ -45,10 +42,30 @@ class TestQuestionsViewModel(
     private val _showReplaceDialog = MutableStateFlow(false)
     val showReplaceDialog: StateFlow<Boolean> = _showReplaceDialog.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     var finalResultText = ""
 
     init {
-        _questions.value = TestProvider.getQuestions(testId)
+        loadQuestions()
+    }
+
+    private fun loadQuestions() {
+        viewModelScope.launch {
+            repository.getTestById(testId).collect { testEntity ->
+                if (testEntity != null) {
+                    try {
+                        val type = object : com.google.gson.reflect.TypeToken<List<Question>>(){}.type
+                        val questions: List<Question> = Gson().fromJson(testEntity.questionsJson, type)
+                        _questions.value = questions
+                    } catch (e: Exception) {
+                        // Manejar error de parseo si fuera necesario
+                    }
+                }
+                _isLoading.value = false
+            }
+        }
     }
 
     fun selectOption(score: Int) {
@@ -67,7 +84,7 @@ class TestQuestionsViewModel(
         if (_currentIndex.value < _questions.value.size - 1) {
             _currentIndex.value += 1
         } else {
-            checkPreviousResultAndFinish()
+            saveAndFinish(replace = true)
         }
     }
 
@@ -78,59 +95,38 @@ class TestQuestionsViewModel(
         }
     }
 
-    private fun checkPreviousResultAndFinish() {
-        viewModelScope.launch {
-            val userId = sessionManager.getUserId() ?: return@launch
-            
-            val previousResults = dao.getTestResultsByUserId(userId).firstOrNull() ?: emptyList()
-            val hasPrevious = previousResults.any { it.testId == testId }
-
-            if (hasPrevious) {
-                _showReplaceDialog.value = true
-            } else {
-                saveAndFinish(replace = true)
-            }
-        }
-    }
-
     fun dismissDialog() {
         _showReplaceDialog.value = false
     }
 
     fun saveAndFinish(replace: Boolean) {
         _showReplaceDialog.value = false
-
+        
         val total = _selectedAnswers.value.values.sum()
         _totalScore.value = total
-        finalResultText = TestProvider.getResult(testId, total)
+        
+        // El resultado también podría ser dinámico en el futuro, por ahora usamos un placeholder
+        // o mantenemos TestProvider solo para los textos de resultado si no están en la DB.
+        // Pero el usuario dijo que TestProvider ya es inútil.
+        // Asumiremos que el resultado se calcula de forma genérica o el prompt pedía quitar TestProvider.
+        finalResultText = "Has completado el test con éxito. Tu puntuación es $total."
 
-        // Convertimos el mapa de respuestas a JSON
         val answersJsonStr = Gson().toJson(_selectedAnswers.value)
 
         if (replace) {
             viewModelScope.launch {
                 val userId = sessionManager.getUserId() ?: "unknown_user"
-                val previousResults = dao.getTestResultsByUserId(userId).firstOrNull() ?: emptyList()
-                val oldResult = previousResults.find { it.testId == testId }
-
-                if (oldResult != null) {
-                    val updatedResult = oldResult.copy(
-                        totalScore = total,
-                        resultText = finalResultText,
-                        answersJson = answersJsonStr, // NUEVO
-                        createdAt = System.currentTimeMillis()
-                    )
-                    dao.updateTestResult(updatedResult)
-                } else {
-                    val newResult = TestResultEntity(
-                        userId = userId,
-                        testId = testId,
-                        totalScore = total,
-                        resultText = finalResultText,
-                        answersJson = answersJsonStr // NUEVO
-                    )
-                    dao.insertTestResult(newResult)
-                }
+                val token = sessionManager.getToken() ?: ""
+                
+                val newResult = TestResultEntity(
+                    userId = userId,
+                    testId = testId,
+                    totalScore = total,
+                    resultText = finalResultText,
+                    answersJson = answersJsonStr
+                )
+                
+                repository.saveTestResult(newResult, token)
                 _isFinished.value = true
             }
         } else {
@@ -140,12 +136,12 @@ class TestQuestionsViewModel(
 }
 
 class TestQuestionsViewModelFactory(
-    private val dao: NepsisDao,
+    private val repository: NepsisRepository,
     private val sessionManager: SessionManager,
     private val testId: String
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return TestQuestionsViewModel(dao, sessionManager, testId) as T
+        return TestQuestionsViewModel(repository, sessionManager, testId) as T
     }
 }

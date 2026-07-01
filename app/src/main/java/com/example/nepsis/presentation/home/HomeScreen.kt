@@ -1,5 +1,9 @@
 package com.example.nepsis.presentation.home
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +25,17 @@ fun HomeScreen(
     navController: NavController,
     onNavigateToDailyCheckIn: () -> Unit
 ) {
+    // Pedir permiso de notificaciones en Android 13+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val permissionLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { /* Manejar si acepta o no, pero con solo pedirlo basta por ahora */ }
+        
+        LaunchedEffect(Unit) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     // Escuchamos los datos de Room reactivamente
     val state by viewModel.state.collectAsState()
 

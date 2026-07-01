@@ -12,7 +12,7 @@ import com.example.nepsis.data.local.dao.NepsisDao
         TestEntity::class,
         TestResultEntity::class
     ],
-    version = 2, // Incrementado debido a los nuevos campos en ProfileEntity
+    version = 3,
     exportSchema = false
 )
 abstract class NepsisDatabase : RoomDatabase() {

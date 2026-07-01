@@ -2,6 +2,7 @@ package com.example.nepsis.data.mapper
 
 import com.example.nepsis.data.local.entity.*
 import com.example.nepsis.data.remote.dto.*
+import com.google.gson.Gson
 
 // --- Daily Mood ---
 fun DailyMoodEntity.toDto() = DailyMoodDto(
@@ -26,9 +27,9 @@ fun DailyMoodDto.toEntity() = DailyMoodEntity(
 // --- Tests ---
 fun TestDto.toEntity() = TestEntity(
     id = id,
-    category = category,
     title = title,
-    description = description
+    description = description ?: "",
+    questionsJson = Gson().toJson(this.questionsJson)
 )
 
 // --- Test Results ---
@@ -37,7 +38,8 @@ fun TestResultEntity.toDto() = TestResultDto(
     userId = userId,
     testId = testId,
     totalScore = totalScore,
-    resultText = resultText
+    resultText = resultText,
+    answersJson = answersJson
 )
 
 fun TestResultDto.toEntity() = TestResultEntity(
@@ -46,6 +48,7 @@ fun TestResultDto.toEntity() = TestResultEntity(
     testId = testId,
     totalScore = totalScore,
     resultText = resultText,
+    answersJson = answersJson,
     isSynced = true
 )
 

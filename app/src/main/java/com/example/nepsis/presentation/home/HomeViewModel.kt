@@ -30,6 +30,18 @@ class HomeViewModel(
 
     init {
         loadLocalMoods()
+        syncWithCloud()
+    }
+
+    private fun syncWithCloud() {
+        viewModelScope.launch {
+            val userId = sessionManager.getUserId()
+            val token = sessionManager.getToken()
+            
+            if (userId != null && token != null) {
+                repository.syncData(userId, token)
+            }
+        }
     }
 
     private fun loadLocalMoods() {

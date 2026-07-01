@@ -4,10 +4,12 @@ import com.example.nepsis.core.network.SupabaseService
 import com.example.nepsis.core.utils.Resource
 import com.example.nepsis.data.local.dao.NepsisDao
 import com.example.nepsis.data.local.entity.DailyMoodEntity
+import com.example.nepsis.data.local.entity.TestEntity
 import com.example.nepsis.data.local.entity.TestResultEntity
 import com.example.nepsis.data.mapper.toDto
 import com.example.nepsis.data.mapper.toEntity
 import com.example.nepsis.domain.repository.NepsisRepository
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 
 class NepsisRepositoryImpl(
@@ -19,21 +21,17 @@ class NepsisRepositoryImpl(
 
     override fun getLocalTestResults(): Flow<List<TestResultEntity>> = dao.getAllTestResults()
 
+    override fun getTestById(testId: String): Flow<TestEntity?> = dao.getTestById(testId)
+
     override suspend fun saveDailyMood(mood: DailyMoodEntity, token: String): Resource<Unit> {
         return try {
-            // 1. Guardar local siempre (Offline First)
             dao.insertDailyMood(mood.copy(isSynced = false))
-
-            // 2. Intentar subir inmediatamente a Supabase
             val response = api.insertDailyMoods("Bearer $token", listOf(mood.toDto()))
             if (response.isSuccessful) {
-                // 3. Si éxito, marcar como sincronizado
                 dao.updateDailyMood(mood.copy(isSynced = true))
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
-            // Si no hay internet, se queda isSynced = false y no pasa nada.
-            // Se subirá en la próxima llamada a syncData()
             Resource.Success(Unit) 
         }
     }
@@ -76,9 +74,18 @@ class NepsisRepositoryImpl(
                 remoteMoods.body()?.forEach { dao.insertDailyMood(it.toEntity()) }
             }
 
-            val remoteTests = api.getTests("Bearer $token")
-            if (remoteTests.isSuccessful) {
-                remoteTests.body()?.forEach { dao.insertTest(it.toEntity()) }
+            // Descarga de tests dinámicos
+            val testsResponse = api.getTests("Bearer $token")
+            if (testsResponse.isSuccessful) {
+                val tests = testsResponse.body()?.map { dto ->
+                    TestEntity(
+                        id = dto.id,
+                        title = dto.title,
+                        description = dto.description,
+                        questionsJson = Gson().toJson(dto.questionsJson)
+                    )
+                } ?: emptyList()
+                dao.insertTests(tests)
             }
 
             Resource.Success(Unit)

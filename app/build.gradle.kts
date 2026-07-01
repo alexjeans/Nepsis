@@ -62,7 +62,7 @@ android {
 }
 
 ksp {
-    arg("room.generateKotlin", "true")
+    arg("room.generateKotlin", "false")
 }
 
 dependencies {
@@ -117,4 +117,7 @@ dependencies {
 
     // Gemini AI
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+
+    // WorkManager para tareas en segundo plano
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }

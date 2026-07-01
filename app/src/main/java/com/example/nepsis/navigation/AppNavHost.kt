@@ -1,5 +1,10 @@
 package com.example.nepsis.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -38,6 +43,8 @@ import kotlinx.coroutines.withContext
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import com.example.nepsis.presentation.settings.SettingsScreen
+import com.example.nepsis.presentation.settings.SettingsViewModel
+import com.example.nepsis.presentation.settings.SettingsViewModelFactory
 import com.example.nepsis.presentation.nepsia.NepsiaChatScreen
 import com.example.nepsis.presentation.nepsia.NepsiaViewModel
 import com.example.nepsis.presentation.nepsia.NepsiaViewModelFactory
@@ -50,7 +57,19 @@ fun AppNavHost(
     NavHost(
         navController = navController,
         startDestination = AppDestinations.Splash.route,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = { 
+            slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(300)) + fadeIn(animationSpec = tween(300)) 
+        },
+        exitTransition = { 
+            slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(300)) + fadeOut(animationSpec = tween(300)) 
+        },
+        popEnterTransition = { 
+            slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(300)) + fadeIn(animationSpec = tween(300)) 
+        },
+        popExitTransition = { 
+            slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(300)) + fadeOut(animationSpec = tween(300)) 
+        }
     ) {
         // --- 1. AUTH & ONBOARDING FLOW ---
         composable(AppDestinations.Splash.route) {
@@ -223,7 +242,14 @@ fun AppNavHost(
         }
 
         composable(AppDestinations.Settings.route) {
+            val context = LocalContext.current
+            val userPrefs = remember { ServiceLocator.provideUserPreferences(context) }
+            val settingsViewModel: SettingsViewModel = viewModel(
+                factory = SettingsViewModelFactory(userPrefs)
+            )
+            
             SettingsScreen(
+                viewModel = settingsViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -268,11 +294,12 @@ fun AppNavHost(
             val testId = backStackEntry.arguments?.getString("testId") ?: "vocacional"
             val context = LocalContext.current
             
-            val dao = remember { ServiceLocator.provideDatabase(context).nepsisDao() }
+            // INYECTAR REPOSITORIO EN VEZ DE DAO DIRECTO
+            val repository = remember { ServiceLocator.provideNepsisRepository(context) }
             val sessionManager = remember { ServiceLocator.provideSessionManager(context) }
             
             val viewModel: TestQuestionsViewModel = viewModel(
-                factory = TestQuestionsViewModelFactory(dao, sessionManager, testId)
+                factory = TestQuestionsViewModelFactory(repository, sessionManager, testId)
             )
             
             TestQuestionsScreen(

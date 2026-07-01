@@ -2,13 +2,15 @@ package com.example.nepsis.domain.repository
 
 import com.example.nepsis.core.utils.Resource
 import com.example.nepsis.data.local.entity.DailyMoodEntity
+import com.example.nepsis.data.local.entity.TestEntity
 import com.example.nepsis.data.local.entity.TestResultEntity
 import kotlinx.coroutines.flow.Flow
 
 interface NepsisRepository {
-    // Lectura local (siempre rápida, sin internet)
-    fun getLocalMoods(userId: String): Flow<List<DailyMoodEntity>> // AHORA PIDE userId
+    // Lectura local
+    fun getLocalMoods(userId: String): Flow<List<DailyMoodEntity>>
     fun getLocalTestResults(): Flow<List<TestResultEntity>>
+    fun getTestById(testId: String): Flow<TestEntity?>
     
     // Guardado local e intento de sincronización
     suspend fun saveDailyMood(mood: DailyMoodEntity, token: String): Resource<Unit>
