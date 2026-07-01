@@ -39,7 +39,13 @@ class HomeViewModel(
             val token = sessionManager.getToken()
             
             if (userId != null && token != null) {
-                repository.syncData(userId, token)
+                // Capturamos el resultado
+                val result = repository.syncData(userId, token)
+                
+                // Si es un error, lo imprimimos en la consola (Logcat) para poder depurar
+                if (result is Resource.Error) {
+                    println("NEPSIS_DEBUG: Fallo al sincronizar tests: ${result.message}")
+                }
             }
         }
     }

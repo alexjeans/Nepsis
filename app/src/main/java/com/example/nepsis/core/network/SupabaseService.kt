@@ -3,6 +3,8 @@ package com.example.nepsis.core.network
 import com.example.nepsis.data.remote.dto.*
 import retrofit2.Response
 import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.Header
 
 interface SupabaseService {
 
@@ -24,9 +26,7 @@ interface SupabaseService {
     ): Response<List<DailyMoodDto>>
 
     @GET("rest/v1/tests?select=*")
-    suspend fun getTests(
-        @Header("Authorization") bearerToken: String
-    ): Response<List<TestDto>>
+    suspend fun getTests(@Header("Authorization") token: String): Response<List<TestDto>>
 
     @POST("rest/v1/test_results")
     suspend fun insertTestResults(

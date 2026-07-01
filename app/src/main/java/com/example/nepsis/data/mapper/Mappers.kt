@@ -4,10 +4,7 @@ import com.example.nepsis.data.local.entity.DailyMoodEntity
 import com.example.nepsis.data.local.entity.ProfileEntity
 import com.example.nepsis.data.local.entity.TestEntity
 import com.example.nepsis.data.local.entity.TestResultEntity
-
-
 import com.example.nepsis.data.remote.dto.*
-import com.google.gson.Gson
 
 // --- Daily Mood ---
 fun DailyMoodEntity.toDto() = DailyMoodDto(
@@ -26,16 +23,19 @@ fun DailyMoodDto.toEntity() = DailyMoodEntity(
     stressLevel = stressLevel,
     emotionalState = emotionalState,
     date = date,
-    isSynced = true // Si viene de Supabase, ya está sincronizado
+    isSynced = true 
 )
+
 // --- Tests ---
-fun TestDto.toEntity() = TestEntity(
-    id = id,
-    category = category ?: "General",
-    title = title,
-    description = description ?: "",
-    questionsJson = com.google.gson.Gson().toJson(this.questionsJson ?: emptyList<Any>())
-)
+fun TestDto.toEntity(): TestEntity {
+    return TestEntity(
+        id = this.id,
+        category = this.category,
+        title = this.title,
+        description = this.description ?: "",
+        questionsJson = this.questionsJson.toString() 
+    )
+}
 
 // --- Test Results ---
 fun TestResultEntity.toDto() = TestResultDto(

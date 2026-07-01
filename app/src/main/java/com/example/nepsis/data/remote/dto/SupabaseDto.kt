@@ -1,5 +1,6 @@
-package com.example.nepsis.data.remote.dto
+ package com.example.nepsis.data.remote.dto
 
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 
 data class SupabaseAuthRequest(
@@ -27,11 +28,13 @@ data class DailyMoodDto(
 )
 
 data class TestDto(
-    @SerializedName("id") val id: String,
-    @SerializedName("category") val category: String?,
-    @SerializedName("title") val title: String,
-    @SerializedName("description") val description: String?,
-    @SerializedName("questions_json") val questionsJson: Any? // Recibe el JSON de Supabase
+    val id: String,
+    val category: String,
+    val title: String,
+    val description: String?,
+    
+    // EL CAMBIO ESTÁ AQUÍ: De String a JsonElement
+    @SerializedName("questions_json") val questionsJson: JsonElement 
 )
 
 data class TestResultDto(
@@ -45,7 +48,7 @@ data class TestResultDto(
 
 data class ProfileDto(
     @SerializedName("id") val id: String,
-    @SerializedName("email") val email: String?, // Crucial que sea nullable (?)
+    @SerializedName("email") val email: String?,
     @SerializedName("full_name") val fullName: String?,
     @SerializedName("avatar_url") val avatarUrl: String?,
     @SerializedName("level") val level: Int,
