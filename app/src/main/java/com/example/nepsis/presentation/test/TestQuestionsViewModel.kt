@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.nepsis.core.utils.SessionManager
+import com.example.nepsis.data.local.entity.TestEntity
 import com.example.nepsis.data.local.entity.TestResultEntity
 import com.example.nepsis.domain.repository.NepsisRepository
 import com.example.nepsis.model.QuestionModel
@@ -40,24 +41,29 @@ class TestQuestionsViewModel(
 
     private fun loadTest() {
         viewModelScope.launch {
+            // Reintento simple: si no lo encuentra, espera 1 segundo por si el sync está terminando
             repository.getTestById(testId).collect { testEntity ->
-                if (testEntity != null) {
-                    try {
-                        // Magia: Parsear el String JSON a una Lista de QuestionModel
-                        val type = object : TypeToken<List<QuestionModel>>() {}.type
-                        val parsedQuestions: List<QuestionModel> = gson.fromJson(testEntity.questionsJson, type)
-                        
-                        _uiState.value = TestState.Success(
-                            title = testEntity.title,
-                            questions = parsedQuestions
-                        )
-                    } catch (e: Exception) {
-                        _uiState.value = TestState.Error("Error al decodificar el test.")
+                if (testEntity == null) {
+                    kotlinx.coroutines.delay(1500) // Espera un poco a que el sync del Home termine
+                    // Buscamos de nuevo
+                    repository.getTestById(testId).collect { finalEntity ->
+                        if (finalEntity != null) processTest(finalEntity)
+                        else _uiState.value = TestState.Error("Test no encontrado. Verifica tu conexión a internet.")
                     }
                 } else {
-                    _uiState.value = TestState.Error("El test no se encuentra en la base de datos local.")
+                    processTest(testEntity)
                 }
             }
+        }
+    }
+
+    private fun processTest(testEntity: TestEntity) {
+        try {
+            val type = object : TypeToken<List<QuestionModel>>() {}.type
+            val parsedQuestions: List<QuestionModel> = gson.fromJson(testEntity.questionsJson, type)
+            _uiState.value = TestState.Success(testEntity.title, parsedQuestions)
+        } catch (e: Exception) {
+            _uiState.value = TestState.Error("Error en formato JSON del test.")
         }
     }
 

@@ -18,4 +18,7 @@ interface NepsisRepository {
     
     // Sincronización maestra (Llama a Supabase y actualiza Room)
     suspend fun syncData(userId: String, token: String): Resource<Unit>
+
+    // Para pruebas manuales
+    suspend fun insertTestManual(test: TestEntity)
 }

@@ -16,10 +16,10 @@
       <change beforePath="$PROJECT_DIR$/.gradle/9.3.1/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.3.1/fileHashes/resourceHashesCache.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/core/network/SupabaseService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/core/network/SupabaseService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/data/mapper/Mappers.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/data/mapper/Mappers.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/data/remote/dto/SupabaseDto.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/data/remote/dto/SupabaseDto.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/data/repository/NepsisRepositoryImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/data/repository/NepsisRepositoryImpl.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/domain/repository/NepsisRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/domain/repository/NepsisRepository.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/presentation/home/HomeViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/presentation/home/HomeViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/presentation/test/TestQuestionsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/nepsis/presentation/test/TestQuestionsViewModel.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -76,16 +76,31 @@ class NepsisRepositoryImpl(
 
             // Descarga de tests dinámicos
             val testsResponse = api.getTests("Bearer $token")
+            
+            // --- AÑADE ESTOS LOGS PARA DEPURAR ---
             if (testsResponse.isSuccessful) {
-                val tests = testsResponse.body()?.map { dto ->
-                    dto.toEntity()
-                } ?: emptyList()
-                dao.insertTests(tests)
+                val body = testsResponse.body()
+                android.util.Log.d("NEPSIS_DEBUG", "API Tests: Éxito. Recibidos: ${body?.size ?: 0} tests.")
+                
+                if (!body.isNullOrEmpty()) {
+                    val tests = body.map { it.toEntity() }
+                    dao.insertTests(tests)
+                    android.util.Log.d("NEPSIS_DEBUG", "Database: Insertados correctamente.")
+                }
+            } else {
+                // Esto imprimirá el error 401, 403, 404, etc.
+                android.util.Log.e("NEPSIS_DEBUG", "API Error: ${testsResponse.code()} - ${testsResponse.message()}")
             }
+            // ------------------------------------
 
             Resource.Success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("NEPSIS_DEBUG", "Sync Exception: ${e.localizedMessage}")
             Resource.Error(e.localizedMessage ?: "Error de sincronización")
         }
+    }
+
+    override suspend fun insertTestManual(test: TestEntity) {
+        dao.insertTest(test)
     }
 }

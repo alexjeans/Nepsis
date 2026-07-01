@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.nepsis.core.utils.Resource
 import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.data.local.entity.DailyMoodEntity
+import com.example.nepsis.data.local.entity.TestEntity
 import com.example.nepsis.domain.repository.NepsisRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,20 @@ class HomeViewModel(
     init {
         loadLocalMoods()
         syncWithCloud()
+        injectTestManual()
+    }
+
+    private fun injectTestManual() {
+        viewModelScope.launch {
+            val testManual = TestEntity(
+                id = "vocacional",
+                category = "Desarrollo",
+                title = "Test Vocacional",
+                description = "Test de prueba",
+                questionsJson = "[{\"id\":1,\"question\":\"¿Te gusta programar?\",\"options\":[{\"text\":\"Sí\",\"category\":\"Si\"},{\"text\":\"No\",\"category\":\"No\"}]}]"
+            )
+            repository.insertTestManual(testManual)
+        }
     }
 
     private fun syncWithCloud() {
@@ -44,7 +59,7 @@ class HomeViewModel(
                 
                 // Si es un error, lo imprimimos en la consola (Logcat) para poder depurar
                 if (result is Resource.Error) {
-                    println("NEPSIS_DEBUG: Fallo al sincronizar tests: ${result.message}")
+                    android.util.Log.d("NEPSIS_DEBUG", "Fallo al sincronizar tests: ${result.message}")
                 }
             }
         }
