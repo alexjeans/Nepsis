@@ -6,14 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.nepsis.core.utils.SessionManager
 import com.example.nepsis.data.local.entity.TestResultEntity
 import com.example.nepsis.domain.repository.NepsisRepository
+import com.example.nepsis.model.QuestionModel
 import com.google.gson.Gson
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.UUID
 
-data class Option(val text: String, val score: Int)
-data class Question(val id: Int, val text: String, val options: List<Option>)
+sealed class TestState {
+    object Loading : TestState()
+    data class Success(val title: String, val questions: List<QuestionModel>) : TestState()
+    data class Error(val message: String) : TestState()
+}
 
 class TestQuestionsViewModel(
     private val repository: NepsisRepository,
@@ -21,116 +25,79 @@ class TestQuestionsViewModel(
     private val testId: String
 ) : ViewModel() {
 
-    private val _questions = MutableStateFlow<List<Question>>(emptyList())
-    val questions: StateFlow<List<Question>> = _questions.asStateFlow()
+    private val _uiState = MutableStateFlow<TestState>(TestState.Loading)
+    val uiState: StateFlow<TestState> = _uiState.asStateFlow()
 
-    private val _currentIndex = MutableStateFlow(0)
-    val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
+    // Mapa para guardar la categoría seleccionada por cada ID de pregunta (ej. {1: "Introvertido", 2: "Extrovertido"})
+    private val _answers = MutableStateFlow<Map<Int, String>>(emptyMap())
+    val answers: StateFlow<Map<Int, String>> = _answers.asStateFlow()
 
-    private val _selectedAnswers = MutableStateFlow<Map<Int, Int>>(emptyMap())
-    val selectedAnswers: StateFlow<Map<Int, Int>> = _selectedAnswers.asStateFlow()
-
-    private val _totalScore = MutableStateFlow(0)
-    val totalScore: StateFlow<Int> = _totalScore.asStateFlow()
-
-    private val _isFinished = MutableStateFlow(false)
-    val isFinished: StateFlow<Boolean> = _isFinished.asStateFlow()
-
-    private val _showValidationError = MutableStateFlow(false)
-    val showValidationError: StateFlow<Boolean> = _showValidationError.asStateFlow()
-
-    private val _showReplaceDialog = MutableStateFlow(false)
-    val showReplaceDialog: StateFlow<Boolean> = _showReplaceDialog.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    var finalResultText = ""
+    private val gson = Gson()
 
     init {
-        loadQuestions()
+        loadTest()
     }
 
-    private fun loadQuestions() {
+    private fun loadTest() {
         viewModelScope.launch {
             repository.getTestById(testId).collect { testEntity ->
                 if (testEntity != null) {
                     try {
-                        val type = object : com.google.gson.reflect.TypeToken<List<Question>>(){}.type
-                        val questions: List<Question> = Gson().fromJson(testEntity.questionsJson, type)
-                        _questions.value = questions
+                        // Magia: Parsear el String JSON a una Lista de QuestionModel
+                        val type = object : TypeToken<List<QuestionModel>>() {}.type
+                        val parsedQuestions: List<QuestionModel> = gson.fromJson(testEntity.questionsJson, type)
+                        
+                        _uiState.value = TestState.Success(
+                            title = testEntity.title,
+                            questions = parsedQuestions
+                        )
                     } catch (e: Exception) {
-                        // Manejar error de parseo si fuera necesario
+                        _uiState.value = TestState.Error("Error al decodificar el test.")
                     }
+                } else {
+                    _uiState.value = TestState.Error("El test no se encuentra en la base de datos local.")
                 }
-                _isLoading.value = false
             }
         }
     }
 
-    fun selectOption(score: Int) {
-        val currentMap = _selectedAnswers.value.toMutableMap()
-        currentMap[_currentIndex.value] = score
-        _selectedAnswers.value = currentMap
-        _showValidationError.value = false
+    fun selectOption(questionId: Int, category: String) {
+        val currentAnswers = _answers.value.toMutableMap()
+        currentAnswers[questionId] = category
+        _answers.value = currentAnswers
     }
 
-    fun onNextClicked() {
-        if (!_selectedAnswers.value.containsKey(_currentIndex.value)) {
-            _showValidationError.value = true
-            return
-        }
-        
-        if (_currentIndex.value < _questions.value.size - 1) {
-            _currentIndex.value += 1
-        } else {
-            saveAndFinish(replace = true)
-        }
-    }
+    fun finishTest(onResultReady: (Int, String) -> Unit) {
+        viewModelScope.launch {
+            val userId = sessionManager.getUserId()
+            val token = sessionManager.getToken()
 
-    fun onPreviousClicked() {
-        if (_currentIndex.value > 0) {
-            _currentIndex.value -= 1
-            _showValidationError.value = false
-        }
-    }
+            if (userId == null || token == null) return@launch
 
-    fun dismissDialog() {
-        _showReplaceDialog.value = false
-    }
+            // 1. Evaluar resultado: Buscar la categoría que más se repite
+            val categoryCounts = _answers.value.values.groupingBy { it }.eachCount()
+            val topCategory = categoryCounts.maxByOrNull { it.value }?.key ?: "Indefinido"
+            val resultText = "Tu resultado dominante es: $topCategory"
 
-    fun saveAndFinish(replace: Boolean) {
-        _showReplaceDialog.value = false
-        
-        val total = _selectedAnswers.value.values.sum()
-        _totalScore.value = total
-        
-        // El resultado también podría ser dinámico en el futuro, por ahora usamos un placeholder
-        // o mantenemos TestProvider solo para los textos de resultado si no están en la DB.
-        // Pero el usuario dijo que TestProvider ya es inútil.
-        // Asumiremos que el resultado se calcula de forma genérica o el prompt pedía quitar TestProvider.
-        finalResultText = "Has completado el test con éxito. Tu puntuación es $total."
+            // 2. Convertir las respuestas a JSON para guardarlas
+            val answersJsonString = gson.toJson(_answers.value)
 
-        val answersJsonStr = Gson().toJson(_selectedAnswers.value)
+            // 3. Crear la entidad para Room
+            val resultEntity = TestResultEntity(
+                id = UUID.randomUUID().toString(), // Dependiendo de tu Room, si genera auto, puedes omitir
+                userId = userId,
+                testId = testId,
+                totalScore = 0, // No usamos puntajes puros
+                resultText = resultText,
+                answersJson = answersJsonString,
+                isSynced = false
+            )
 
-        if (replace) {
-            viewModelScope.launch {
-                val userId = sessionManager.getUserId() ?: "unknown_user"
-                val token = sessionManager.getToken() ?: ""
-                
-                val newResult = TestResultEntity(
-                    userId = userId,
-                    testId = testId,
-                    totalScore = total,
-                    resultText = finalResultText,
-                    answersJson = answersJsonStr
-                )
-                
-                repository.saveTestResult(newResult, token)
-                _isFinished.value = true
-            }
-        } else {
-            _isFinished.value = true
+            // 4. Guardar y encolar a Supabase
+            repository.saveTestResult(resultEntity, token)
+
+            // 5. Navegar a la pantalla de resultados
+            onResultReady(0, resultText)
         }
     }
 }
@@ -142,6 +109,9 @@ class TestQuestionsViewModelFactory(
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return TestQuestionsViewModel(repository, sessionManager, testId) as T
+        if (modelClass.isAssignableFrom(TestQuestionsViewModel::class.java)) {
+            return TestQuestionsViewModel(repository, sessionManager, testId) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

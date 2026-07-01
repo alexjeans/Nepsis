@@ -1,7 +1,9 @@
 package com.example.nepsis.presentation.test
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -17,120 +19,88 @@ fun TestQuestionsScreen(
     onNavigateBack: () -> Unit,
     onTestFinished: (Int, String) -> Unit
 ) {
-    val questions by viewModel.questions.collectAsState()
-    val currentIndex by viewModel.currentIndex.collectAsState()
-    val selectedAnswers by viewModel.selectedAnswers.collectAsState()
-    val isFinished by viewModel.isFinished.collectAsState()
-    val showValidationError by viewModel.showValidationError.collectAsState()
-    val showReplaceDialog by viewModel.showReplaceDialog.collectAsState()
-
-    LaunchedEffect(isFinished) {
-        if (isFinished) {
-            onTestFinished(viewModel.totalScore.value, viewModel.finalResultText)
-        }
-    }
-
-    if (questions.isEmpty()) return
-
-    val currentQuestion = questions[currentIndex]
-    val currentSelectedScore = selectedAnswers[currentIndex]
-    val isLastQuestion = currentIndex == questions.size - 1
+    val uiState by viewModel.uiState.collectAsState()
+    val answers by viewModel.answers.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pregunta ${currentIndex + 1} de ${questions.size}") },
+                title = { 
+                    Text(if (uiState is TestState.Success) (uiState as TestState.Success).title else "Cargando Test...") 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
                     }
                 }
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                LinearProgressIndicator(
-                    progress = { (currentIndex + 1) / questions.size.toFloat() },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                Text(
-                    text = currentQuestion.text,
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                if (showValidationError) {
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            when (val state = uiState) {
+                is TestState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                is TestState.Error -> {
                     Text(
-                        text = "Por favor, selecciona una opción para avanzar.",
+                        text = state.message,
                         color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
+                        modifier = Modifier.align(Alignment.Center).padding(16.dp)
                     )
                 }
+                is TestState.Success -> {
+                    val allAnswered = state.questions.size == answers.size
 
-                currentQuestion.options.forEach { option ->
-                    val isSelected = currentSelectedScore == option.score
-                    Card(
-                        onClick = { viewModel.selectOption(option.score) },
-                        modifier = Modifier.fillMaxWidth(),
-                        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Box(modifier = Modifier.padding(16.dp)) {
-                            // Se eliminó por completo la puntuación de la vista
-                            Text(text = option.text, style = MaterialTheme.typography.bodyLarge)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+                            contentPadding = PaddingValues(vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(state.questions) { question ->
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            text = "${question.id}. ${question.question}",
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        
+                                        question.options.forEach { option ->
+                                            val isSelected = answers[question.id] == option.category
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable { viewModel.selectOption(question.id, option.category) }
+                                                    .padding(vertical = 8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                RadioButton(
+                                                    selected = isSelected,
+                                                    onClick = { viewModel.selectOption(question.id, option.category) }
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(text = option.text)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Button(
+                            enabled = allAnswered,
+                            onClick = { viewModel.finishTest(onTestFinished) },
+                            modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp)
+                        ) {
+                            Text("Finalizar Test")
                         }
                     }
                 }
             }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (currentIndex > 0) {
-                    OutlinedButton(onClick = { viewModel.onPreviousClicked() }) {
-                        Text("Anterior")
-                    }
-                } else {
-                    Spacer(modifier = Modifier.width(1.dp))
-                }
-
-                Button(onClick = { viewModel.onNextClicked() }) {
-                    Text(if (isLastQuestion) "Finalizar" else "Siguiente")
-                }
-            }
         }
-    }
-
-    if (showReplaceDialog) {
-        AlertDialog(
-            onDismissRequest = { viewModel.dismissDialog() },
-            title = { Text("Módulo ya completado") },
-            text = { Text("Tienes un resultado guardado para este módulo. ¿Deseas reemplazarlo por el nuevo resultado?") },
-            confirmButton = {
-                TextButton(
-                    onClick = { viewModel.saveAndFinish(replace = true) }
-                ) {
-                    Text("Reemplazar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { viewModel.saveAndFinish(replace = false) }
-                ) {
-                    Text("Cancelar")
-                }
-            }
-        )
     }
 }

@@ -18,12 +18,18 @@ fun TestDetailScreen(
     onNavigateBack: () -> Unit,
     onStartTest: (String) -> Unit
 ) {
-    val testInfo = TestProvider.getTestInfo(testId)
+    // Usamos valores por defecto ahora que los datos son dinámicos desde la DB
+    val title = when (testId) {
+        "personalidad" -> "Test de Personalidad (MBTI)"
+        "lenguaje_amor" -> "Lenguajes del Amor"
+        "vocacional" -> "Test Vocacional"
+        else -> "Evaluación Psicológica"
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(testInfo.category) },
+                title = { Text("Detalles del Test") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
@@ -41,7 +47,7 @@ fun TestDetailScreen(
         ) {
             Column {
                 Text(
-                    text = testInfo.title,
+                    text = title,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -52,7 +58,7 @@ fun TestDetailScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Timer, contentDescription = "Duración", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = testInfo.duration, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = "5-10 min", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -64,7 +70,7 @@ fun TestDetailScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = testInfo.description,
+                    text = "Esta evaluación te permitirá profundizar en tu autoconocimiento. Responde de manera honesta basándote en lo que sientes actualmente.",
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

@@ -1,4 +1,4 @@
-package com.example.nepsis.presentation.test
+/*  *package com.example.nepsis.presentation.test
 
 data class TestInfo(val title: String, val category: String, val description: String, val duration: String)
 
@@ -91,4 +91,4 @@ object TestProvider {
             else -> if (score >= 7) "Perfil Tecnológico - Ingeniería" else "Perfil Humanista - Creativo"
         }
     }
-}
+} **/
