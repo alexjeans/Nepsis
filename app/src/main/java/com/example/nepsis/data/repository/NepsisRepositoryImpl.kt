@@ -77,7 +77,9 @@ class NepsisRepositoryImpl(
             // Descarga de tests dinámicos
             val testsResponse = api.getTests("Bearer $token")
             if (testsResponse.isSuccessful) {
-                val tests = testsResponse.body()?.map { it.toEntity() } ?: emptyList()
+                val tests = testsResponse.body()?.map { dto ->
+                    dto.toEntity()
+                } ?: emptyList()
                 dao.insertTests(tests)
             }
 
